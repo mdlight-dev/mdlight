@@ -1,29 +1,548 @@
-/* style.css — structural rules only. No hardcoded colors or fonts.
-   Everything visual is defined by the active theme via CSS custom properties.
-   This file is milestone 2 scaffolding: enough to make the app readable
-   without the Wails defaults fighting us. Full typography pass in milestone 3. */
+/* ==========================================================================
+   MDLight — style.css
+   Structural rules only. Zero hardcoded colors or fonts.
+   Every visual property references a CSS custom property.
+   The active theme file defines the values; this file defines the shapes.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Reset & box model
+   -------------------------------------------------------------------------- */
 
 *, *::before, *::after {
     box-sizing: border-box;
 }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    text-align: left;
+/* --------------------------------------------------------------------------
+   Root & body
+   -------------------------------------------------------------------------- */
+
+html {
+    /* Set bg on html to prevent white flash before body paints */
+    background-color: var(--md-bg);
+    scroll-behavior: smooth;
+    /* Explicit 100% width — WebKitGTK doesn't always assume it */
+    width: 100%;
     height: 100%;
-    background-color: var(--md-bg, #1b2636);
 }
 
 body {
-    font-family: var(--md-font-body, Georgia, "Times New Roman", serif);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: var(--md-font-body);
     font-size: 17px;
-    line-height: var(--md-line-height, 1.7);
-    background-color: var(--md-bg, #1b2636);
-    color: var(--md-fg, #cdd6f4);
+    line-height: var(--md-line-height);
+    background-color: var(--md-bg);
+    color: var(--md-fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 #app {
-    height: 100%;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   Reading pane
+   The article.md-body is the document container.
+   It is centered, width-capped, and padded for comfortable reading.
+   -------------------------------------------------------------------------- */
+
+.md-body {
+    flex: 1;
+    max-width: var(--md-max-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: 3rem 2.5rem calc(5rem + 28px);
+}
+
+/* --------------------------------------------------------------------------
+   Front matter card
+   Rendered above the document body when YAML front matter is present.
+   -------------------------------------------------------------------------- */
+
+.frontmatter-card {
+    max-width: var(--md-max-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 1px solid var(--md-hr-color);
+}
+
+.fm-title {
+    /* UA stylesheet gives h1 a large em-based size; reset it completely
+       so our 1.05rem is authoritative regardless of nesting depth. */
+    all: unset;
+    display: block;
+    margin: 0 0 0.4rem;
+    font-family: var(--md-font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--md-heading-color);
+    letter-spacing: 0.01em;
+}
+
+.fm-date {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--md-blockquote-fg);
+    margin-bottom: 0.6rem;
+}
+
+.fm-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.fm-tag {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-family: var(--md-font-mono);
+    background: var(--md-code-bg);
+    color: var(--md-code-fg);
+    border: 1px solid var(--md-code-border);
+}
+
+/* --------------------------------------------------------------------------
+   Headings
+   Distinct scale. Font size, weight, and spacing all intentional.
+   -------------------------------------------------------------------------- */
+
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4,
+.md-body h5,
+.md-body h6 {
+    font-family: var(--md-font-heading);
+    color: var(--md-heading-color);
+    line-height: 1.25;
+    margin-top: 2.25em;
+    margin-bottom: 0.6em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.md-body h1 { font-size: 2.1rem;  margin-top: 0; }
+.md-body h2 { font-size: 1.55rem; padding-bottom: 0.3em; border-bottom: 1px solid var(--md-hr-color); }
+.md-body h3 { font-size: 1.2rem;  font-weight: 600; }
+.md-body h4 { font-size: 1rem;    font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+.md-body h5 { font-size: 0.9rem;  font-weight: 600; }
+.md-body h6 { font-size: 0.85rem; font-weight: 600; color: var(--md-blockquote-fg); }
+
+/* First heading after front matter doesn't need top margin */
+.frontmatter-card + .md-body h1:first-child,
+.md-body > h1:first-child {
+    margin-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Paragraphs
+   -------------------------------------------------------------------------- */
+
+.md-body p {
+    margin: 0 0 1.15em;
+}
+
+.md-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Links
+   -------------------------------------------------------------------------- */
+
+.md-body a {
+    color: var(--md-link-color);
+    text-decoration: underline;
+    text-decoration-color: var(--md-link-color);
+    text-underline-offset: 2px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.md-body a:hover {
+    color: var(--md-link-hover);
+    text-decoration-color: var(--md-link-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Lists
+   -------------------------------------------------------------------------- */
+
+.md-body ul,
+.md-body ol {
+    margin: 0 0 1.15em;
+    padding-left: 1.75em;
+}
+
+.md-body li {
+    margin-bottom: 0.3em;
+}
+
+.md-body li > p {
+    margin-bottom: 0.5em;
+}
+
+.md-body li > ul,
+.md-body li > ol {
+    margin-top: 0.3em;
+    margin-bottom: 0;
+}
+
+/* Task lists */
+.md-body input[type="checkbox"] {
+    margin-right: 0.5em;
+    accent-color: var(--md-link-color);
+    vertical-align: -0.1em;
+}
+
+/* --------------------------------------------------------------------------
+   Blockquotes
+   -------------------------------------------------------------------------- */
+
+.md-body blockquote {
+    margin: 1.5em 0;
+    padding: 0.75em 1.25em;
+    border-left: 3px solid var(--md-blockquote-border);
+    color: var(--md-blockquote-fg);
+    font-style: italic;
+}
+
+.md-body blockquote > p:last-child {
+    margin-bottom: 0;
+}
+
+.md-body blockquote blockquote {
+    margin: 0.75em 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   Horizontal rules
+   -------------------------------------------------------------------------- */
+
+.md-body hr {
+    border: none;
+    border-top: 1px solid var(--md-hr-color);
+    margin: 2.5em 0;
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+
+.md-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    font-size: 0.92em;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.md-body thead tr {
+    border-bottom: 2px solid var(--md-table-border);
+}
+
+.md-body tbody tr {
+    border-bottom: 1px solid var(--md-table-border);
+}
+
+.md-body tbody tr:last-child {
+    border-bottom: none;
+}
+
+.md-body th {
+    padding: 0.6em 1em;
     text-align: left;
+    font-family: var(--md-font-heading);
+    font-weight: 600;
+    font-size: 0.85em;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--md-heading-color);
+}
+
+.md-body td {
+    padding: 0.55em 1em;
+    vertical-align: top;
+}
+
+/* --------------------------------------------------------------------------
+   Inline code
+   -------------------------------------------------------------------------- */
+
+.md-body :not(pre) > code {
+    font-family: var(--md-font-mono);
+    font-size: 0.875em;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    background: var(--md-code-bg);
+    color: var(--md-code-fg);
+    border: 1px solid var(--md-code-border);
+}
+
+/* --------------------------------------------------------------------------
+   Fenced code blocks
+   -------------------------------------------------------------------------- */
+
+.md-body pre {
+    margin: 1.5em 0;
+    border-radius: 6px;
+    background: var(--md-code-bg);
+    border: 1px solid var(--md-code-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.md-body pre code {
+    display: block;
+    padding: 1.1em 1.35em;
+    font-family: var(--md-font-mono);
+    font-size: 0.875em;
+    line-height: 1.65;
+    background: transparent;
+    border: none;
+    color: var(--md-code-fg);
+    white-space: pre;
+}
+
+/* chroma wraps in a .chroma div; keep it flush with pre */
+.md-body .chroma {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+/* Language label — shown via data attribute on the pre when goldmark emits it */
+.md-body pre[data-lang]::before {
+    content: attr(data-lang);
+    display: block;
+    padding: 0.35em 1.35em 0;
+    font-family: var(--md-font-mono);
+    font-size: 0.72em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--md-blockquote-fg);
+    opacity: 0.7;
+}
+
+/* --------------------------------------------------------------------------
+   Images
+   -------------------------------------------------------------------------- */
+
+.md-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    display: block;
+    margin: 1.5em auto;
+}
+
+.md-body figure {
+    margin: 1.5em 0;
+    text-align: center;
+}
+
+.md-body figcaption {
+    font-size: 0.82em;
+    color: var(--md-blockquote-fg);
+    margin-top: 0.5em;
+    font-style: italic;
+}
+
+/* Remote-image placeholder (rendered by Go when remote fetch is blocked) */
+.remote-image-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.4em 0.75em;
+    border: 1px solid var(--md-code-border);
+    border-radius: 4px;
+    font-family: var(--md-font-mono);
+    font-size: 0.8em;
+    color: var(--md-blockquote-fg);
+    cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Strong & emphasis
+   -------------------------------------------------------------------------- */
+
+.md-body strong {
+    font-weight: 700;
+    color: var(--md-heading-color);
+}
+
+.md-body em {
+    font-style: italic;
+}
+
+.md-body del {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------------
+   Status bar
+   Fixed to the bottom. Uses theme variables so it always fits the skin.
+   -------------------------------------------------------------------------- */
+
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 28px;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--md-statusbar-bg);
+    border-top: 1px solid var(--md-hr-color);
+    font-family: var(--md-font-mono);
+    font-size: 0.72rem;
+    color: var(--md-blockquote-fg);
+    z-index: 100;
+    user-select: none;
+}
+
+.status-bar .flag {
+    padding: 0.1em 0.45em;
+    border-radius: 3px;
+    background: var(--md-code-bg);
+    border: 1px solid var(--md-code-border);
+    color: var(--md-link-color);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+}
+
+/* --------------------------------------------------------------------------
+   Loading & error states
+   -------------------------------------------------------------------------- */
+
+.loading,
+.error {
+    max-width: var(--md-max-width);
+    margin: 4rem auto;
+    padding: 0 2.5rem;
+    font-family: var(--md-font-mono);
+    font-size: 0.9rem;
+    color: var(--md-blockquote-fg);
+}
+
+.error {
+    color: var(--md-error-fg, #f38ba8);
+}
+
+/* --------------------------------------------------------------------------
+   Conflict overlay (dirty + external file:changed)
+   Theme-aware, never a native OS dialog.
+   -------------------------------------------------------------------------- */
+
+.conflict-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--md-overlay-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.conflict-dialog {
+    background: var(--md-bg);
+    border: 1px solid var(--md-hr-color);
+    border-radius: 8px;
+    padding: 2rem 2.5rem;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 8px 32px var(--md-shadow);
+}
+
+.conflict-dialog p {
+    margin: 0 0 1.5rem;
+    font-size: 0.95rem;
+    color: var(--md-fg);
+}
+
+.conflict-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.conflict-btn {
+    padding: 0.45em 1.1em;
+    border-radius: 4px;
+    border: 1px solid var(--md-code-border);
+    font-family: var(--md-font-body);
+    font-size: 0.875rem;
+    cursor: pointer;
+    background: var(--md-code-bg);
+    color: var(--md-fg);
+    transition: background 0.12s ease;
+}
+
+.conflict-btn:hover {
+    background: var(--md-link-color);
+    color: var(--md-bg);
+    border-color: var(--md-link-color);
+}
+
+.conflict-btn.primary {
+    background: var(--md-link-color);
+    color: var(--md-bg);
+    border-color: var(--md-link-color);
+}
+
+.conflict-btn.primary:hover {
+    background: var(--md-link-hover);
+    border-color: var(--md-link-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbar styling — WebKitGTK supports these
+   -------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--md-hr-color);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--md-blockquote-fg);
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .conflict-btn {
+        transition: none;
+    }
 }

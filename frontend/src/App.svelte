@@ -2,7 +2,14 @@
   import { onMount } from 'svelte';
   import { OpenFile } from '../wailsjs/go/main/App';
 
-  // DocumentPayload fields — mirrors the Go struct.
+  // ?raw tells Vite to import the file content as a plain string.
+  // This works in both `wails dev` and `wails build` (the string is bundled
+  // into the JS output, so no runtime fetch is needed and nothing can 404).
+  // Milestone 4 replaces this import with a ResolveTheme() Go binding call
+  // so user themes and the --theme flag work. For milestone 3, a static
+  // import is exactly right: one theme, zero network round-trips.
+  import defaultDarkCSS from './themes/builtin/default-dark.css?raw';
+
   let html = '';
   let frontMatter = { Title: '', Date: '', Tags: [] };
   let wordCount = 0;
@@ -12,16 +19,49 @@
   let error = '';
   let loading = true;
 
+  // Inject the active theme's CSS text into <style id="mdlight-theme">.
+  // Called on startup and on every theme switch (milestone 4+).
+  function applyTheme(cssText) {
+    let el = document.getElementById('mdlight-theme');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'mdlight-theme';
+      document.head.appendChild(el);
+    }
+    el.textContent = cssText;
+  }
+
+  // Inject the chroma palette that matches the active theme.
+  // Separate tag keeps theme variables and syntax colors independently
+  // swappable when milestone 4 wires up per-theme chroma palettes.
+  function applyChroma(cssText) {
+    let el = document.getElementById('mdlight-chroma');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'mdlight-chroma';
+      document.head.appendChild(el);
+    }
+    el.textContent = cssText;
+  }
+
   onMount(async () => {
     try {
+      // Both style tags get the same source in milestone 3: default-dark.css
+      // contains the :root {} block and the .chroma classes in one file.
+      // Milestone 4's ResolveTheme() will return just the :root block; at
+      // that point the chroma palette ships as a separate file per theme.
+      applyTheme(defaultDarkCSS);
+      applyChroma(defaultDarkCSS);
+
+      // Load the document.
       // Milestone 2: pass empty string so Go uses the hardcoded test path.
       // Milestone 4 will pass the real path from CLI args via a startup event.
       const payload = await OpenFile('');
 
-      html        = payload.HTML;
-      frontMatter = payload.FrontMatter;
-      wordCount   = payload.WordCount;
-      readingMins = payload.ReadingMins;
+      html         = payload.HTML;
+      frontMatter  = payload.FrontMatter;
+      wordCount    = payload.WordCount;
+      readingMins  = payload.ReadingMins;
       needsMermaid = payload.NeedsMermaid;
       needsMath    = payload.NeedsMath;
     } catch (e) {
@@ -37,7 +77,6 @@
 {:else if error}
   <div class="error">{error}</div>
 {:else}
-  <!-- Front matter card (v1.0 will style this properly) -->
   {#if frontMatter.Title}
     <div class="frontmatter-card">
       <h1 class="fm-title">{frontMatter.Title}</h1>
@@ -50,13 +89,10 @@
     </div>
   {/if}
 
-  <!-- Rendered Markdown body -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <article class="md-body" data-needs-mermaid={needsMermaid} data-needs-math={needsMath}>
     {@html html}
   </article>
 
-  <!-- Status bar -->
   <footer class="status-bar">
     <span>{wordCount} words</span>
     <span>{readingMins} min read</span>
@@ -66,53 +102,16 @@
 {/if}
 
 <style>
-  /* Temporary structural styles for milestone 2 only.
-     These will be replaced wholesale by style.css + the default theme in milestone 3. */
+  /*
+    This block contains only rules that need Svelte's component scoping —
+    i.e. rules that would bleed into rendered Markdown if written globally.
+    Everything else lives in style.css (structure) and the theme file (skin).
 
-  .loading, .error {
-    padding: 2rem;
-    font-family: sans-serif;
-    color: #666;
-  }
-  .error { color: #c00; }
+    As of milestone 3 there are no such rules: all structural classes
+    (.md-body, .frontmatter-card, .status-bar, .loading, .error) are
+    intentionally global so the theme variables reach them.
 
-  .frontmatter-card {
-    padding: 1rem 2rem;
-    border-bottom: 1px solid #eee;
-    font-family: sans-serif;
-  }
-  .fm-title  { margin: 0 0 0.25rem; font-size: 1.1rem; }
-  .fm-date   { font-size: 0.85rem; color: #888; }
-  .fm-tags   { margin-top: 0.5rem; }
-  .fm-tag    { display: inline-block; margin-right: 0.4rem; padding: 0.1rem 0.4rem;
-               background: #f0f0f0; border-radius: 3px; font-size: 0.8rem; }
-
-  .md-body {
-    max-width: 720px;
-    margin: 2rem auto;
-    padding: 0 2rem;
-    font-family: serif;
-    line-height: 1.7;
-  }
-
-  .status-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 0.4rem 1rem;
-    background: #f8f8f8;
-    border-top: 1px solid #eee;
-    font-family: sans-serif;
-    font-size: 0.8rem;
-    color: #888;
-    display: flex;
-    gap: 1rem;
-  }
-  .flag {
-    background: #e8f0fe;
-    padding: 0 0.4rem;
-    border-radius: 3px;
-    color: #3c6;
-  }
+    This block is intentionally empty. It exists as a placeholder so the
+    pattern is clear for any future component-scoped rules.
+  */
 </style>

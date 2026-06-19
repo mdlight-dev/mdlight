@@ -6,6 +6,61 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   Bundled fonts
+   Files live in frontend/src/assets/fonts/ and are embedded into the binary
+   by Vite at build time. Two families:
+
+   Literata        — reading serif, OFL, by TypeTogether for Google Play Books.
+                     Variable font: opsz axis (6–144) + wght axis (300–700).
+                     Two files cover all weights in both roman and italic.
+
+   JetBrains Mono  — monospace for code blocks, OFL, by JetBrains.
+                     Variable font: wght axis (100–800), roman + italic.
+
+   Fallback chains in the theme file handle the rare case the embed fails,
+   but in practice Vite bundles these as base64 data URIs in the JS output,
+   so they are always available.
+   -------------------------------------------------------------------------- */
+
+/* Literata — roman (covers weight 300–700 via wght axis) */
+@font-face {
+    font-family: "Literata";
+    src: url("/src/assets/fonts/Literata[opsz,wght].woff2") format("woff2");
+    font-weight: 300 700;
+    font-style: normal;
+    font-display: swap;
+    font-named-instance: "Regular";
+}
+
+/* Literata — italic */
+@font-face {
+    font-family: "Literata";
+    src: url("/src/assets/fonts/Literata-Italic[opsz,wght].woff2") format("woff2");
+    font-weight: 300 700;
+    font-style: italic;
+    font-display: swap;
+    font-named-instance: "Italic";
+}
+
+/* JetBrains Mono — roman */
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url("/src/assets/fonts/JetBrainsMono[wght].woff2") format("woff2");
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* JetBrains Mono — italic */
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url("/src/assets/fonts/JetBrainsMono-Italic[wght].woff2") format("woff2");
+    font-weight: 100 800;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
    Reset & box model
    -------------------------------------------------------------------------- */
 

@@ -60,18 +60,13 @@
 
     /* ------------------------------------------------------------------
        Font stacks
-       Body:    Charter first (excellent screen serif, ships on Linux via
-                fonts-charter on Debian/Ubuntu; falls back to the system
-                serif with a final Georgia safety net).
-       Heading: Same stack as body — a deliberate choice. The heading
-                scale and weight carry hierarchy; switching families
-                would add noise, not clarity.
-       Mono:    JetBrains Mono is the ideal; system-ui-monospace and
-                ui-monospace cover macOS and Windows before the generic
-                fallbacks.
+       Literata and JetBrains Mono are bundled as WOFF2 variable fonts
+       in frontend/src/assets/fonts/ — they are always available.
+       The fallback chain exists only for the unlikely case the embed
+       fails (e.g. a local dev build with missing assets).
     ------------------------------------------------------------------ */
-    --md-font-body:    "Charter", "Bitstream Charter", "Sitka Text", Georgia, serif;
-    --md-font-heading: "Charter", "Bitstream Charter", "Sitka Text", Georgia, serif;
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
     --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
     /* ------------------------------------------------------------------

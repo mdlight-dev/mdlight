@@ -1,0 +1,158 @@
+/* ==========================================================================
+   MDLight — default-dark.css
+   The default theme. Dark, ink-on-slate. Comfortable for long reading.
+
+   Palette origin: deep blue-slate backgrounds, warm off-white text, a
+   cornflower accent that reads as focused without feeling electric.
+   Every value here is deliberate — not a port of any existing theme.
+
+   This file is a :root {} block plus a chroma syntax palette.
+   It defines every variable the structure in style.css references.
+   No layout or spacing lives here.
+
+   NOTE: This is the Go-side embedded copy, served by internal/theme via
+   embed.FS when ResolveTheme("default-dark") is called at runtime.
+   The canonical source is frontend/src/themes/builtin/default-dark.css.
+   Keep the two files in sync.
+   ========================================================================== */
+
+:root {
+    /* ------------------------------------------------------------------
+       Backgrounds & surfaces
+    ------------------------------------------------------------------ */
+    --md-bg:             #18202e;
+    --md-statusbar-bg:   #141b27;
+
+    /* ------------------------------------------------------------------
+       Foreground text
+    ------------------------------------------------------------------ */
+    --md-fg:             #cfd8e8;
+    --md-heading-color:  #e8edf5;
+
+    /* ------------------------------------------------------------------
+       Accent: cornflower-slate
+    ------------------------------------------------------------------ */
+    --md-link-color:     #7aa2d4;
+    --md-link-hover:     #9dbde8;
+
+    /* ------------------------------------------------------------------
+       Blockquotes
+    ------------------------------------------------------------------ */
+    --md-blockquote-border: #4d6880;
+    --md-blockquote-fg:     #8da0b8;
+
+    /* ------------------------------------------------------------------
+       Code surfaces
+    ------------------------------------------------------------------ */
+    --md-code-bg:     #1f2d40;
+    --md-code-fg:     #c0cfe2;
+    --md-code-border: #2c3f56;
+
+    /* ------------------------------------------------------------------
+       Chrome: rules, table borders, dividers
+    ------------------------------------------------------------------ */
+    --md-hr-color:      #253345;
+    --md-table-border:  #253345;
+
+    /* ------------------------------------------------------------------
+       Font stacks
+    ------------------------------------------------------------------ */
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    /* ------------------------------------------------------------------
+       Reading geometry
+    ------------------------------------------------------------------ */
+    --md-max-width:   68ch;
+    --md-line-height: 1.75;
+
+    /* ------------------------------------------------------------------
+       Overlays & shadows
+    ------------------------------------------------------------------ */
+    --md-overlay-bg: rgba(10, 14, 22, 0.72);
+    --md-shadow:      rgba(0, 0, 0, 0.45);
+
+    /* ------------------------------------------------------------------
+       Error color
+    ------------------------------------------------------------------ */
+    --md-error-fg: #e08a8a;
+}
+
+/* ==========================================================================
+   Chroma syntax highlighting palette — "mdlight-dark"
+   ========================================================================== */
+
+.chroma { background: var(--md-code-bg); color: var(--md-code-fg); }
+
+.chroma .err { color: #e08a8a; }
+
+.chroma .ln, .chroma .lnt { color: #3d5068; margin-right: 1em; user-select: none; }
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf { color: #5e7a96; font-style: italic; }
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt { color: #c792a8; font-weight: 600; }
+
+.chroma .o,
+.chroma .ow,
+.chroma .p  { color: #8da0b8; }
+
+.chroma .n  { color: #c0cfe2; }
+.chroma .na { color: #9dbde8; }
+.chroma .nb { color: #7aa2d4; }
+.chroma .nc { color: #b8cfe8; font-weight: 600; }
+.chroma .nd { color: #9dbde8; }
+.chroma .ne { color: #e08a8a; font-weight: 600; }
+.chroma .nf { color: #82aacc; }
+.chroma .ni { color: #c0cfe2; }
+.chroma .nl { color: #c0cfe2; }
+.chroma .nn { color: #b8cfe8; }
+.chroma .nt { color: #7aa2d4; }
+.chroma .nv { color: #c0cfe2; }
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss { color: #98b89a; }
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il { color: #d4a97a; }
+
+.chroma .l,
+.chroma .ld { color: #98b89a; }
+
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: 700; }
+.chroma .gh { color: #e8edf5; font-weight: 700; }
+.chroma .gi { color: #98b89a; background: rgba(152, 184, 154, 0.1); display: block; }
+.chroma .gd { color: #e08a8a; background: rgba(224, 138, 138, 0.1); display: block; }
+.chroma .gu { color: #9dbde8; font-weight: 700; }
+.chroma .gl { text-decoration: underline; }
+.chroma .gp { color: #5e7a96; font-weight: 700; }

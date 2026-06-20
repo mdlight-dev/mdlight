@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=MDLight
+GenericName=Markdown Reader
+Comment=A beautiful, lightweight Markdown reader and editor
+Exec=mdlight %f
+Icon=mdlight
+Terminal=false
+Categories=Utility;TextEditor;
+MimeType=text/markdown;text/x-markdown;
+Keywords=markdown;reader;editor;md;
+StartupNotify=true
+StartupWMClass=mdlight

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -88,7 +89,12 @@ func (a *App) OpenFile(path string) (DocumentPayload, error) {
 	payload := render.Render(src)
 
 	// Set the window title to the filename (not the full path).
-	wailsruntime.WindowSetTitle(a.ctx, filepath.Base(path))
+	// Guard with a nil check: startup() sets a.ctx, and OpenFile is only ever
+	// called from the frontend after startup, but the guard costs nothing and
+	// prevents a panic if that assumption ever breaks.
+	if a.ctx != nil {
+		wailsruntime.WindowSetTitle(a.ctx, filepath.Base(path))
+	}
 
 	// Replace the watcher with one for the new path.
 	a.startWatching(path)
@@ -104,23 +110,23 @@ func (a *App) SaveFile(path string, rawMarkdown string) error {
 
 	tmp, err := os.CreateTemp(dir, ".mdlight-save-*")
 	if err != nil {
-		return err
+		return fmt.Errorf("SaveFile: create temp: %w", err)
 	}
 	tmpPath := tmp.Name()
 
 	if _, err := tmp.WriteString(rawMarkdown); err != nil {
 		tmp.Close()
 		os.Remove(tmpPath)
-		return err
+		return fmt.Errorf("SaveFile: write: %w", err)
 	}
 	if err := tmp.Close(); err != nil {
 		os.Remove(tmpPath)
-		return err
+		return fmt.Errorf("SaveFile: close temp: %w", err)
 	}
 
 	if err := os.Rename(tmpPath, path); err != nil {
 		os.Remove(tmpPath)
-		return err
+		return fmt.Errorf("SaveFile: rename: %w", err)
 	}
 
 	return nil
@@ -157,6 +163,7 @@ func (a *App) ResolveTheme(name string) (string, error) {
 			for _, t := range available {
 				names = append(names, t.Name)
 			}
+			sort.Strings(names)
 			return "", fmt.Errorf("%w — available themes: %s", err, strings.Join(names, ", "))
 		}
 		return "", err

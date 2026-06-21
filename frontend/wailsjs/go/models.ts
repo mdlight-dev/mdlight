@@ -1,22 +1,3 @@
-export namespace main {
-	
-	export class ThemeInfo {
-	    Name: string;
-	    Source: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new ThemeInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	        this.Source = source["Source"];
-	    }
-	}
-
-}
-
 export namespace render {
 	
 	export class FrontMatter {
@@ -74,6 +55,25 @@ export namespace render {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace theme {
+	
+	export class Info {
+	    Name: string;
+	    Source: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Info(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Source = source["Source"];
+	    }
 	}
 
 }

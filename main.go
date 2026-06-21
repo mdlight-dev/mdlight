@@ -24,10 +24,22 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		// Match the default-dark theme background so there's no flash
-		// of a different colour before the frontend paints.
-		BackgroundColour: &options.RGBA{R: 0x18, G: 0x20, B: 0x2e, A: 1},
-		OnStartup:        app.startup,
+		// Match the default-dark theme background so there's no flash of
+		// white before the frontend applies the theme stylesheet.
+		BackgroundColour: &options.RGBA{R: 0x18, G: 0x20, B: 0x2e, A: 0xff},
+		// EnableFileDrop activates Wails' native file drag-and-drop handling,
+		// giving the JS OnFileDrop callback absolute paths to dropped files.
+		//
+		// DisableWebViewDrop prevents WebKitGTK from handling the drop itself:
+		// without this, dropping a file (e.g. an image or PDF) causes the
+		// webview to navigate away and replace the entire app UI with a native
+		// browser file view. Both flags are required together on Linux.
+		DragAndDrop: &options.DragAndDrop{
+			EnableFileDrop:     true,
+			DisableWebViewDrop: true,
+		},
+		OnStartup:  app.startup,
+		OnShutdown: app.shutdown, // M5: clean up the file watcher on exit
 		Bind: []interface{}{
 			app,
 		},
@@ -39,30 +51,27 @@ func main() {
 	}
 }
 
-// parseArgs parses the mdlight command line.
+// parseArgs parses the command-line arguments MDLight cares about:
 //
-// Supported forms:
+//	mdlight [path] [--theme name|--theme=name]
 //
-//	mdlight                          → no file, open picker
-//	mdlight file.md                  → open file.md with default theme
-//	mdlight file.md --theme nord     → open file.md with Nord theme
-//	mdlight --theme nord file.md     → same, flag before positional
-//
-// No third-party flag library is used — the surface is small enough that
-// a manual loop is clearer and has no dependencies.
+// No third-party flag library — the surface is small enough that a manual
+// loop is clearer and adds no dependencies. Unknown flags are silently ignored
+// so future flags don't cause hard failures on older installs.
 func parseArgs() (filePath, themeName string) {
 	args := os.Args[1:]
 	for i := 0; i < len(args); i++ {
+		arg := args[i]
 		switch {
-		case args[i] == "--theme" && i+1 < len(args):
+		case arg == "--theme" && i+1 < len(args):
 			themeName = args[i+1]
-			i++ // consume the value
-		case strings.HasPrefix(args[i], "--theme="):
-			themeName = strings.TrimPrefix(args[i], "--theme=")
-		case !strings.HasPrefix(args[i], "--"):
+			i++ // consume the value token
+		case strings.HasPrefix(arg, "--theme="):
+			themeName = strings.TrimPrefix(arg, "--theme=")
+		case !strings.HasPrefix(arg, "--"):
 			// First non-flag argument is the file path.
 			if filePath == "" {
-				filePath = args[i]
+				filePath = arg
 			}
 		}
 	}

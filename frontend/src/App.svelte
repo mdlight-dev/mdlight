@@ -1,35 +1,52 @@
 <script>
   import { onMount } from 'svelte';
-  import { OpenFile, GetStartupFile, GetStartupTheme, PickFile, ResolveTheme } from '../wailsjs/go/main/App';
-  import { OnFileDrop } from '../wailsjs/runtime';
+  import { EventsOn, OnFileDrop } from '../wailsjs/runtime/runtime';
+  import {
+    OpenFile,
+    GetStartupFile,
+    GetStartupTheme,
+    PickFile,
+    ResolveTheme,
+  } from '../wailsjs/go/main/App';
 
-  // Static import of the default theme — bundled at build time by Vite so
-  // there is no runtime fetch and nothing can 404. Used as the fallback when
-  // no --theme flag is given, and also as the value shown before the Go
-  // binding round-trip completes (zero flash of unstyled content).
+  // ?raw tells Vite to import the file content as a plain string — bundled
+  // into the JS output at build time, no runtime fetch, nothing can 404.
+  // Used as the fallback when no --theme flag was passed or ResolveTheme fails.
   import defaultDarkCSS from './themes/builtin/default-dark.css?raw';
 
-  let html = '';
-  let frontMatter = { Title: '', Date: '', Tags: [] };
-  let wordCount = 0;
-  let readingMins = 0;
+  // ── Reactive state ──────────────────────────────────────────────────────────
+
+  let html         = '';
+  let frontMatter  = { Title: '', Date: '', Tags: [] };
+  let wordCount    = 0;
+  let readingMins  = 0;
   let needsMermaid = false;
-  let needsMath = false;
-  // Two independent error slots so a successful file open doesn't clobber
-  // a theme error, and a theme error doesn't mask a file error.
-  let themeError = ''; // set when --theme name is not found
-  let fileError  = ''; // set when OpenFile / PickFile fails
-  let loading = true;
-  // Tracks whether a file has been successfully opened. Distinct from html
-  // being non-empty — an empty file or a front-matter-only file produces
-  // html === '' but is still a valid open document that should render
-  // (showing word count 0, metadata card if present, etc.).
-  let fileOpened = false;
+  let needsMath    = false;
 
-  // ── Theme injection ────────────────────────────────────────────────────
+  // Two independent error slots so a theme error doesn't wipe a file error
+  // and vice versa.
+  let themeError = '';  // shown as a status bar badge; does not block file open
+  let fileError  = '';  // shown as a full-page error state
 
-  // Inject the active theme's :root {} block + any extra selectors into
-  // <style id="mdlight-theme">. Called on startup and on every theme switch.
+  let loading    = true;
+  let fileOpened = false; // true once at least one file has been successfully loaded
+
+  // currentPath is the absolute path of the currently open file.
+  // Set on every successful loadFile(); read by the file:changed handler.
+  let currentPath = '';
+
+  // ── Edit / conflict state (M5: wired now; activated in v1.0 edit mode) ────
+  //
+  // dirty becomes true when the user has unsaved edits in split-pane edit mode
+  // (v1.0). For v0.1 it is always false — there is no edit mode yet — so the
+  // conflict overlay is structurally wired but never actually shown.
+  let dirty        = false;
+  let showConflict = false;
+
+  // ── Theme injection ─────────────────────────────────────────────────────────
+
+  // applyTheme injects CSS text into <style id="mdlight-theme"> in <head>.
+  // Called on startup and on every theme switch (milestone 4+).
   function applyTheme(cssText) {
     let el = document.getElementById('mdlight-theme');
     if (!el) {
@@ -40,10 +57,9 @@
     el.textContent = cssText;
   }
 
-  // Inject the chroma palette that matches the active theme.
-  // Separate <style> tag keeps theme variables and syntax colors independently
-  // swappable when per-theme chroma palette files are split in v1.0.
-  // For now (M3/M4) the same combined file feeds both tags — harmless.
+  // applyChroma injects the syntax highlighting palette that matches the theme.
+  // Separate tag from applyTheme so theme variables and chroma colors are
+  // independently swappable when per-theme chroma palettes are split in v1.0.
   function applyChroma(cssText) {
     let el = document.getElementById('mdlight-chroma');
     if (!el) {
@@ -54,15 +70,20 @@
     el.textContent = cssText;
   }
 
-  // ── Document loading ───────────────────────────────────────────────────
+  // ── File loading ─────────────────────────────────────────────────────────────
 
-  // loadFile is the single code path for opening a document regardless of
-  // how the path was obtained (CLI arg, file picker, or drag-and-drop).
+  // loadFile is the single shared function for opening a file. Used by:
+  //   - CLI path on startup
+  //   - Native file picker
+  //   - Drag-and-drop (OnFileDrop)
+  //   - file:changed auto-reload
+  //   - Conflict overlay "reload from disk"
   async function loadFile(path) {
-    loading = true;
+    loading   = true;
     fileError = '';
     try {
       const payload = await OpenFile(path);
+      currentPath  = path;          // track for the file:changed handler
       html         = payload.HTML;
       frontMatter  = payload.FrontMatter;
       wordCount    = payload.WordCount;
@@ -77,78 +98,119 @@
     }
   }
 
-  // ── Startup ────────────────────────────────────────────────────────────
+  // ── Conflict overlay handlers ────────────────────────────────────────────────
+
+  // keepMine dismisses the overlay without reloading. The user's unsaved edits
+  // remain in place. The on-disk version is silently ignored.
+  function keepMine() {
+    showConflict = false;
+  }
+
+  // reloadFromDisk dismisses the overlay, clears dirty state, and reloads the
+  // file from disk — discarding any unsaved edits.
+  async function reloadFromDisk() {
+    showConflict = false;
+    dirty        = false;
+    await loadFile(currentPath);
+  }
+
+  // ── Startup ──────────────────────────────────────────────────────────────────
 
   onMount(async () => {
-    try {
-      // Apply the default theme immediately — before any network round-trip —
-      // so there is no flash of unstyled content while the Go bindings resolve.
+    // ── 1. Resolve theme ────────────────────────────────────────────────────
+    // Call GetStartupFile and GetStartupTheme in parallel — both are simple
+    // struct field reads on the Go side, no I/O, so there's no ordering
+    // dependency between them.
+    const [startupFile, startupTheme] = await Promise.all([
+      GetStartupFile(),
+      GetStartupTheme(),
+    ]);
+
+    if (startupTheme) {
+      try {
+        const css = await ResolveTheme(startupTheme);
+        applyTheme(css);
+        applyChroma(css);
+      } catch (e) {
+        // Theme resolution failed — fall back to the bundled default and keep
+        // the error visible in the status bar so the user knows the flag was
+        // unrecognised, without blocking the file from opening.
+        themeError = String(e);
+        applyTheme(defaultDarkCSS);
+        applyChroma(defaultDarkCSS);
+      }
+    } else {
+      // No --theme flag: use the bundled default (no network round-trip).
       applyTheme(defaultDarkCSS);
       applyChroma(defaultDarkCSS);
-
-      // Option B from HANDOFF_milestone4: call bindings to get the CLI values.
-      // This is race-free: bindings are always available by the time onMount
-      // runs, unlike EventsOn which can fire before the listener is registered.
-      const [filePath, themeName] = await Promise.all([
-        GetStartupFile(),
-        GetStartupTheme(),
-      ]);
-
-      // Resolve theme: if --theme was passed, fetch it from Go (which follows
-      // the XDG → builtin → error resolution order). Otherwise keep the static
-      // import already applied above.
-      if (themeName) {
-        try {
-          const css = await ResolveTheme(themeName);
-          applyTheme(css);
-          applyChroma(css);
-        } catch (themeErr) {
-          // Bad --theme value: surface the Go error (which includes available
-          // theme names). Default theme stays applied. Stored in themeError
-          // separately so a successful file open doesn't clear it.
-          themeError = String(themeErr);
-        }
-      }
-
-      // Open the file: CLI path → loadFile directly.
-      // No path → open the native file picker, then loadFile on the choice.
-      // Picker cancelled (empty string) → show an idle state, no error.
-      if (filePath) {
-        await loadFile(filePath);
-      } else {
-        const chosen = await PickFile();
-        if (chosen) {
-          await loadFile(chosen);
-        } else {
-          // User cancelled the picker — show an empty idle state.
-          loading = false;
-        }
-      }
-    } catch (e) {
-      fileError = String(e);
-      loading = false;
     }
 
-    // ── Drag-and-drop ────────────────────────────────────────────────
-    // Wails v2: OnFileDrop(callback, useDropTarget).
-    // The callback receives (x, y, paths[]) — we take the first path only
-    // (dropping multiple files opens the first one; multi-file support is
-    // out of scope for v0.1).
+    // ── 2. Open the file ────────────────────────────────────────────────────
+    if (startupFile) {
+      await loadFile(startupFile);
+    } else {
+      // No path on the CLI → open the native file picker.
+      try {
+        const picked = await PickFile();
+        if (picked) {
+          await loadFile(picked);
+        } else {
+          // User cancelled the picker — show the idle/welcome state.
+          loading = false;
+        }
+      } catch (e) {
+        fileError = String(e);
+        loading   = false;
+      }
+    }
+
+    // ── 3. Drag-and-drop ────────────────────────────────────────────────────
+    // OnFileDrop registers a handler for files dragged onto the window.
+    // The callback receives (x, y, paths[]) — we only care about paths[0]
+    // since MDLight opens one file per window.
+    //
+    // useDropTarget = false: fire the callback on any drop anywhere in the
+    // window. With true, Wails only fires when the drop lands on an element
+    // that has `--wails-drop-target: drop` set as a CSS custom property —
+    // and MDLight has no such elements, so true would silently swallow every
+    // drop. false is correct for whole-window drop acceptance.
     OnFileDrop((_x, _y, paths) => {
       if (paths && paths.length > 0) {
         loadFile(paths[0]);
       }
-    }, true);
+    }, false);
+
+    // ── 4. File watcher ─────────────────────────────────────────────────────
+    // Register the file:changed event listener. The Go-side watcher emits
+    // this after debouncing filesystem events on the open file's directory.
+    //
+    // Use EventsOn (not EventsOnce) — the handler must fire on every external
+    // change, not just the first one.
+    EventsOn('file:changed', (_changedPath) => {
+      if (!currentPath) return;
+
+      if (dirty) {
+        // The user has unsaved edits. Don't silently discard either version —
+        // show the conflict overlay and let them choose.
+        showConflict = true;
+      } else {
+        // Clean state: re-render silently. No user action required.
+        loadFile(currentPath);
+      }
+    });
   });
 </script>
 
 {#if loading}
   <div class="loading">Loading…</div>
+
 {:else if fileError}
   <div class="error">{fileError}</div>
+
 {:else if !fileOpened}
-  <!-- Picker was cancelled or no file passed; idle state -->
-  <div class="loading">Open a Markdown file to begin.</div>
+  <!-- Idle / welcome state: picker was cancelled or no file given. -->
+  <div class="loading">No file open. Drop a Markdown file here or run <code>mdlight file.md</code>.</div>
+
 {:else}
   {#if frontMatter.Title}
     <div class="frontmatter-card">
@@ -162,30 +224,54 @@
     </div>
   {/if}
 
-  <article class="md-body" data-needs-mermaid={needsMermaid} data-needs-math={needsMath}>
+  <article
+    class="md-body"
+    data-needs-mermaid={needsMermaid}
+    data-needs-math={needsMath}
+  >
     {@html html}
   </article>
+
+  <!-- Conflict overlay: shown when the file changes on disk while dirty === true.
+       In v0.1 dirty is always false so this overlay never appears — but the
+       structure is wired so v1.0 edit mode just needs to flip dirty to true. -->
+  {#if showConflict}
+    <div class="conflict-overlay">
+      <div class="conflict-dialog">
+        <p>This file was changed on disk. What would you like to do?</p>
+        <div class="conflict-actions">
+          <button class="conflict-btn" on:click={keepMine}>
+            Keep my edits
+          </button>
+          <button class="conflict-btn primary" on:click={reloadFromDisk}>
+            Reload from disk
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 
   <footer class="status-bar">
     <span>{wordCount} words</span>
     <span>{readingMins} min read</span>
     {#if needsMermaid}<span class="flag">mermaid</span>{/if}
     {#if needsMath}<span class="flag">math</span>{/if}
-    {#if themeError}<span class="flag theme-error" title={themeError}>theme not found</span>{/if}
+    {#if themeError}
+      <span class="flag" style="color: var(--md-error-fg);" title={themeError}>
+        theme error
+      </span>
+    {/if}
   </footer>
 {/if}
 
 <style>
   /*
     This block contains only rules that need Svelte's component scoping.
-    All structural and visual rules live in style.css and the theme file.
-  */
+    As of milestone 5 there are no such rules — all structural classes live
+    in style.css (structure) and the theme file (skin), and the conflict
+    overlay classes are already defined in style.css.
 
-  /* theme-error flag in the status bar — scoped so it doesn't bleed into
-     rendered Markdown content which might also have .flag elements. */
-  .theme-error {
-    color: var(--md-error-fg, #e08a8a);
-    border-color: var(--md-error-fg, #e08a8a);
-    cursor: help;
-  }
+    This block is intentionally empty. It exists as a placeholder so the
+    pattern is clear for any future component-scoped rules.
+  */
 </style>

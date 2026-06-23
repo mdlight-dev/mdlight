@@ -87,6 +87,7 @@ func (a *App) OpenFile(path string) (DocumentPayload, error) {
 	}
 
 	payload := render.Render(src)
+	payload.HTML = render.RewriteImages(payload.HTML, filepath.Dir(path))
 
 	// Set the window title to the filename (not the full path).
 	// Guard with a nil check: startup() sets a.ctx, and OpenFile is only ever

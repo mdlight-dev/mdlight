@@ -1,0 +1,63 @@
+# Maintainer: MDLight Maintainers <zouheir.barhoumi@gmail.com>
+# Contributor: Zuhayr Barhoumi <zouheir.barhoumi@gmail.com>
+
+pkgname=mdlight
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="A beautiful, lightweight Markdown reader"
+arch=('x86_64' 'aarch64')
+url="https://github.com/le-blanc/mdlight"
+license=('MIT')
+depends=(
+  'gtk3'
+  'webkit2gtk-4.1'
+  'glibc'
+)
+makedepends=(
+  'go>=1.23'
+  'nodejs>=20'
+  'npm'
+  'pkgconfig'
+)
+install=mdlight.install
+source=("${url}/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+validpgpkeys=()
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  go mod tidy
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  # Build frontend
+  cd frontend
+  npm install --ignore-scripts
+  npm run build
+  cd ..
+
+  # Build Go binary (stripped, versioned)
+  go build \
+    -trimpath \
+    -ldflags="-s -w -X main.version=${pkgver}" \
+    -o "${srcdir}/${pkgname}" .
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  # Binary
+  install -Dm755 "${srcdir}/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+
+  # Desktop file
+  install -Dm644 build/linux/mdlight.desktop \
+    "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+
+  # Icon
+  install -Dm644 build/appicon.png \
+    "${pkgdir}/usr/share/icons/hicolor/256x256/apps/${pkgname}.png"
+  install -Dm644 build/appicon.png \
+    "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
+}

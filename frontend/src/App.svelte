@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { EventsOn, OnFileDrop } from '../wailsjs/runtime/runtime';
   import {
     OpenFile,
@@ -42,6 +42,37 @@
   // conflict overlay is structurally wired but never actually shown.
   let dirty        = false;
   let showConflict = false;
+
+  // ── Zoom state (M7) ─────────────────────────────────────────────────────────
+  //
+  // zoomLevel is a percentage (100 = default). Applied via CSS transform on
+  // the article element so it doesn't affect layout calculations (scroll,
+  // status bar position, etc.). Persisted in-session only; v1.0 can add
+  // cross-session persistence via internal/state.
+  let zoomLevel = 100;
+
+  function applyZoom() {
+    const article = document.querySelector('.md-body');
+    if (article) {
+      article.style.transform = `scale(${zoomLevel / 100})`;
+      article.style.transformOrigin = 'top center';
+    }
+  }
+
+  function zoomIn() {
+    zoomLevel = Math.min(zoomLevel + 10, 300);
+    applyZoom();
+  }
+
+  function zoomOut() {
+    zoomLevel = Math.max(zoomLevel - 10, 50);
+    applyZoom();
+  }
+
+  function zoomReset() {
+    zoomLevel = 100;
+    applyZoom();
+  }
 
   // ── Theme injection ─────────────────────────────────────────────────────────
 
@@ -95,6 +126,8 @@
       fileError = String(e);
     } finally {
       loading = false;
+      await tick();
+      applyZoom();
     }
   }
 
@@ -198,6 +231,67 @@
         loadFile(currentPath);
       }
     });
+
+    // ── 5. Keyboard shortcuts (zoom) ────────────────────────────────────────
+    function handleKeydown(e) {
+      // Only handle zoom shortcuts when not typing in an input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case '=':
+          case '+':
+            e.preventDefault();
+            zoomIn();
+            break;
+          case '-':
+            e.preventDefault();
+            zoomOut();
+            break;
+          case '0':
+            e.preventDefault();
+            zoomReset();
+            break;
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeydown);
+
+    // ── 6. Remote image click-to-load ─────────────────────────────────────
+    document.addEventListener('click', handlePlaceholderClick);
+    document.addEventListener('keydown', handlePlaceholderKeydown);
+  });
+
+  function handlePlaceholderClick(e) {
+    const el = e.target.closest('.remote-image-placeholder');
+    if (!el) return;
+    loadRemoteImage(el);
+  }
+
+  function handlePlaceholderKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest('.remote-image-placeholder');
+    if (!el) return;
+    e.preventDefault();
+    loadRemoteImage(el);
+  }
+
+  function loadRemoteImage(el) {
+    const src = el.dataset.src;
+    if (!src) return;
+    const img = document.createElement('img');
+    img.alt = el.textContent.replace('[image] ', '').replace(' (click to load)', '').trim();
+    img.src = src;
+    img.className = 'remote-image-loaded';
+    el.replaceWith(img);
+  }
+
+  // Clean up event listeners on unmount
+  onDestroy(() => {
+    window.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('click', handlePlaceholderClick);
+    document.removeEventListener('keydown', handlePlaceholderKeydown);
   });
 </script>
 
@@ -259,6 +353,11 @@
     {#if themeError}
       <span class="flag" style="color: var(--md-error-fg);" title={themeError}>
         theme error
+      </span>
+    {/if}
+    {#if zoomLevel !== 100}
+      <span class="zoom-reset" title="Click to reset zoom" on:click={zoomReset} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zoomReset(); } }} tabindex="0" role="button">
+        {zoomLevel}%
       </span>
     {/if}
   </footer>

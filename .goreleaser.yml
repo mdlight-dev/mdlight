@@ -1,0 +1,94 @@
+version: 2
+
+project_name: mdlight
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: mdlight
+    main: .
+    binary: mdlight
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    env:
+      - CGO_ENABLED=1
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .ShortCommit }}
+
+archives:
+  - id: binary
+    format: binary
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+
+nfpms:
+  - id: linux-packages
+    package_name: mdlight
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    vendor: MDLight
+    homepage: https://github.com/le-blanc/mdlight
+    maintainer: MDLight Maintainers
+    description: A beautiful, lightweight Markdown reader
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    contents:
+      - src: build/linux/mdlight.desktop
+        dst: /usr/share/applications/mdlight.desktop
+        type: desktop
+      - src: build/appicon.png
+        dst: /usr/share/icons/hicolor/256x256/apps/mdlight.png
+        type: icon
+      - src: build/appicon.png
+        dst: /usr/share/pixmaps/mdlight.png
+        type: icon
+    overrides:
+      deb:
+        dependencies:
+          - libgtk-3-0
+          - libwebkit2gtk-4.1-0
+      rpm:
+        dependencies:
+          - libgtk-3
+          - webkit2gtk4.1
+      apk:
+        dependencies:
+          - gtk+3.0
+          - webkit2gtk-4.1
+
+release:
+  github:
+    owner: le-blanc
+    name: mdlight
+  draft: true
+  prerelease: auto

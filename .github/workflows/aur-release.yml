@@ -1,0 +1,79 @@
+name: aur-release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  aur:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate PKGBUILD
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" build/aur/PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" build/aur/PKGBUILD
+
+      - name: Generate .SRCINFO
+        run: |
+          cd build/aur
+          # Generate .SRCINFO from PKGBUILD
+          echo "pkgbase = mdlight" > .SRCINFO
+          echo "	pkgdesc = A beautiful, lightweight Markdown reader and editor" >> .SRCINFO
+          echo "	pkgver = ${{ steps.version.outputs.version }}" >> .SRCINFO
+          echo "	pkgrel = 1" >> .SRCINFO
+          echo "	url = https://github.com/le-blanc/mdlight" >> .SRCINFO
+          echo "	install = mdlight.install" >> .SRCINFO
+          echo "	arch = x86_64" >> .SRCINFO
+          echo "	arch = aarch64" >> .SRCINFO
+          echo "	license = MIT" >> .SRCINFO
+          echo "	makedepends = go>=1.23" >> .SRCINFO
+          echo "	makedepends = nodejs>=20" >> .SRCINFO
+          echo "	makedepends = npm" >> .SRCINFO
+          echo "	makedepends = pkgconfig" >> .SRCINFO
+          echo "	depends = gtk3" >> .SRCINFO
+          echo "	depends = webkit2gtk-4.1" >> .SRCINFO
+          echo "	depends = glibc" >> .SRCINFO
+          echo "	source = ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/archive/v${{ steps.version.outputs.version }}/mdlight-${{ steps.version.outputs.version }}.tar.gz" >> .SRCINFO
+          echo "	sha256sums = SKIP" >> .SRCINFO
+
+      - name: Clone AUR repo
+        uses: actions/checkout@v4
+        with:
+          repository: aur-archive/mdlight
+          token: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          path: _aur
+
+      - name: Update AUR files
+        run: |
+          cp build/aur/PKGBUILD _aur/
+          cp build/aur/.SRCINFO _aur/
+          cp build/aur/mdlight.install _aur/
+
+      - name: Commit and push to AUR
+        run: |
+          cd _aur
+          git config user.name "MDLight Release Bot"
+          git config user.email "zouheir.barhoumi@gmail.com"
+          git add PKGBUILD .SRCINFO mdlight.install
+          if git diff --cached --quiet; then
+            echo "No changes to AUR — SKIPPING"
+            exit 0
+          fi
+          git commit -m "Update to v${{ steps.version.outputs.version }}"
+          git push origin master

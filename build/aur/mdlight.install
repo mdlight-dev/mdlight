@@ -1,0 +1,14 @@
+post_install() {
+  # Register the MIME type so file managers open .md files with mdlight
+  update-desktop-database --quiet 2>/dev/null || true
+  update-mime-database    --quiet /usr/share/mime 2>/dev/null || true
+  gtk-update-icon-cache   --quiet /usr/share/icons/hicolor 2>/dev/null || true
+}
+
+post_upgrade() {
+  post_install
+}
+
+pre_remove() {
+  true
+}

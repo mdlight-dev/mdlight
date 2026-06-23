@@ -430,6 +430,27 @@ body {
     cursor: pointer;
 }
 
+.missing-image-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.3em 0.6em;
+    border: 1px dashed var(--md-code-border);
+    border-radius: 4px;
+    font-family: var(--md-font-mono);
+    font-size: 0.8em;
+    color: var(--md-error-fg);
+    opacity: 0.7;
+}
+
+.remote-image-loaded {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    display: block;
+    margin: 1.5em auto;
+}
+
 /* --------------------------------------------------------------------------
    Strong & emphasis
    -------------------------------------------------------------------------- */
@@ -480,6 +501,23 @@ body {
     color: var(--md-link-color);
     font-size: 0.68rem;
     letter-spacing: 0.04em;
+}
+
+.status-bar .zoom-reset {
+    padding: 0.1em 0.45em;
+    border-radius: 3px;
+    background: var(--md-link-color);
+    color: var(--md-bg);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.status-bar .zoom-reset:hover {
+    background: var(--md-link-hover);
+    opacity: 0.9;
 }
 
 /* --------------------------------------------------------------------------

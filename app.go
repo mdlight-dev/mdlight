@@ -16,6 +16,9 @@ import (
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+// startTime is set at process start for --bench timing measurements.
+var startTime = time.Now()
+
 // App is the Wails application struct. Its exported methods are bound to the
 // frontend and callable from Svelte via the generated wailsjs bindings.
 //
@@ -25,15 +28,17 @@ type App struct {
 	ctx          context.Context
 	startupFile  string
 	startupTheme string
-	watcher      *watch.Watcher // nil until a file is opened; replaced on each OpenFile call
+	bench        bool              // if true, print timing and exit after first load
+	watcher      *watch.Watcher
 }
 
 // NewApp creates the App. filePath and themeName are parsed from os.Args in
 // main.go before wails.Run, so they are available before the webview starts.
-func NewApp(filePath, themeName string) *App {
+func NewApp(filePath, themeName string, bench bool) *App {
 	return &App{
 		startupFile:  filePath,
 		startupTheme: themeName,
+		bench:        bench,
 	}
 }
 
@@ -41,6 +46,9 @@ func NewApp(filePath, themeName string) *App {
 // application context, which is needed for EventsEmit and native dialogs.
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	if a.bench {
+		println("[bench] startup:", time.Since(startTime).Round(time.Millisecond).String())
+	}
 }
 
 // shutdown is called by Wails after the window closes. Cleans up the watcher
@@ -89,16 +97,20 @@ func (a *App) OpenFile(path string) (DocumentPayload, error) {
 	payload := render.Render(src)
 	payload.HTML = render.RewriteImages(payload.HTML, filepath.Dir(path))
 
-	// Set the window title to the filename (not the full path).
-	// Guard with a nil check: startup() sets a.ctx, and OpenFile is only ever
-	// called from the frontend after startup, but the guard costs nothing and
-	// prevents a panic if that assumption ever breaks.
 	if a.ctx != nil {
 		wailsruntime.WindowSetTitle(a.ctx, filepath.Base(path))
 	}
 
-	// Replace the watcher with one for the new path.
 	a.startWatching(path)
+
+	if a.bench {
+		println("[bench] open-file duration:", time.Since(startTime).Round(time.Millisecond).String())
+		// Schedule quit on next tick so the response reaches the frontend first
+		go func() {
+			time.Sleep(50 * time.Millisecond)
+			wailsruntime.Quit(a.ctx)
+		}()
+	}
 
 	return payload, nil
 }

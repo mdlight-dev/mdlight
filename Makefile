@@ -25,8 +25,10 @@ lint:
 
 build: frontend
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=1 \
-		go build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" \
+		go build -trimpath -tags "desktop,production" \
+		-ldflags="-s -w -X main.version=$(VERSION)" \
 		-o $(BINARY) .
+	@ls -lh $(BINARY) | awk '{print "  → " $$5}'
 
 build-linux:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 $(MAKE) build
@@ -47,13 +49,10 @@ frontend:
 # ── Benchmarks ──────────────────────────────────────────────────────────────────
 
 bench: build
-	@echo "=== Startup time ==="
-	@hyperfine --warmup 1 \
-		'n ./$(BINARY) testdata/sample.md' \
-		2>/dev/null || \
-		echo "(install hyperfine: cargo install hyperfine)"
-	@echo "=== RSS memory ==="
-	@/usr/bin/time -v ./$(BINARY) testdata/sample.md 2>&1 | grep "Maximum resident" || echo "(requires /usr/bin/time)"
+	@echo "=== Binary size ==="
+	@ls -lh $(BINARY) | awk '{print "  " $$5}'
+	@echo "=== Startup bench (cold, --bench) ==="
+	@./$(BINARY) testdata/sample.md --bench 2>&1 | grep "\[bench\]"
 
 # ── Cleanup ─────────────────────────────────────────────────────────────────────
 

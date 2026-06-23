@@ -11,6 +11,7 @@ permissions:
 jobs:
   goreleaser:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -34,6 +35,7 @@ jobs:
             goarch: amd64
             pkgs: ""
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,7 +48,10 @@ jobs:
 
       - name: Install system deps
         if: matrix.pkgs != ''
-        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.pkgs }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ${{ matrix.pkgs }} || true
+        timeout-minutes: 10
 
       - uses: actions/setup-node@v4
         with:
@@ -54,19 +59,13 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          distribution: goreleaser
-          version: "~2"
-          install-only: true
-
       - name: Build
         run: |
           make build \
             GOOS=${{ matrix.goos }} \
             GOARCH=${{ matrix.goarch }} \
             VERSION=${{ github.ref_name }}
+        timeout-minutes: 15
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

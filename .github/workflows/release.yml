@@ -63,7 +63,7 @@ jobs:
 
       - name: Build
         run: |
-          make mdlight \
+          make build \
             GOOS=${{ matrix.goos }} \
             GOARCH=${{ matrix.goarch }} \
             VERSION=${{ github.ref_name }}

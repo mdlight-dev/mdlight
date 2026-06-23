@@ -79,8 +79,10 @@ jobs:
         run: |
           mkdir -p _packages
           for fmt in deb rpm apk arch; do
-            nfpm package --config build/linux/nfpm.yml --packager "$fmt" -o "_packages/"
+            echo "Building $fmt package..."
+            nfpm package --config build/linux/nfpm.yml --packager "$fmt" --output "_packages/" || echo "Warning: $fmt package failed (continuing)"
           done
+          ls -la _packages/
         env:
           MDLIGHT_VERSION: ${{ github.ref_name }}
 

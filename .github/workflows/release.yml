@@ -65,7 +65,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/*.tar.gz
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
 
   release:
     needs: goreleaser
@@ -79,12 +81,13 @@ jobs:
 
       - name: Generate checksums
         run: |
-          find _artifacts -name '*.tar.gz' -type f -exec sha256sum {} \; > checksums.txt
+          find _artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' \) -exec sha256sum {} \; > checksums.txt
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             _artifacts/**/*.tar.gz
+            _artifacts/**/*.zip
             checksums.txt
           draft: false
           prerelease: false

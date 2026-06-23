@@ -5,7 +5,7 @@ project_name: mdlight
 before:
   hooks:
     - go mod tidy
-    - cd frontend && npm ci && npm run build
+    - bash -c "cd frontend && npm ci && npm run build"
 
 builds:
   - id: mdlight
@@ -32,8 +32,7 @@ builds:
       - -s -w -X main.version={{ .Version }} -X main.commit={{ .ShortCommit }}
 
 archives:
-  - format: tar.gz
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 checksum:
   name_template: "checksums.txt"

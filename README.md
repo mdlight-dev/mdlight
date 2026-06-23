@@ -5,12 +5,6 @@ A beautiful, lightweight Markdown reader — no vaults, no plugins, no accounts.
 ## Quick start
 
 ```sh
-# Installation
-# Arch Linux (AUR)
-yay -S mdlight
-
-# From source (see "Building from source" below)
-
 # Usage
 mdlight document.md
 mdlight notes.md --theme nord
@@ -31,16 +25,6 @@ mdlight                         # opens file picker
 - **Word count & reading time**: shown in the status bar
 
 ## Installation
-
-### Arch Linux (AUR)
-
-```sh
-yay -S mdlight
-# or with your preferred AUR helper:
-paru -S mdlight
-```
-
-The AUR package builds from source and installs the binary, `.desktop` file, and application icon.
 
 ### Pre-built binaries
 

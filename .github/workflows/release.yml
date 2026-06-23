@@ -58,7 +58,7 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: build --single-target --clean
+          args: release --single-target --clean --skip-publish --skip-announce --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CGO_ENABLED: 1
@@ -66,9 +66,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: |
-            dist/*.tar.gz
-            dist/*.zip
+          path: dist/mdlight_*
 
   release:
     needs: goreleaser
@@ -82,13 +80,12 @@ jobs:
 
       - name: Generate checksums
         run: |
-          find _artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' \) -exec sha256sum {} \; > checksums.txt
+          find _artifacts -type f -name 'mdlight_*' -exec sha256sum {} \; > checksums.txt
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            _artifacts/**/*.tar.gz
-            _artifacts/**/*.zip
+            _artifacts/**/mdlight_*
             checksums.txt
           draft: false
           prerelease: false

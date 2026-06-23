@@ -12,10 +12,10 @@ license: MIT
 contents:
   - src: build/bin/mdlight
     dst: /usr/bin/mdlight
-    type: binary
+    file_info:
+      mode: 0755
   - src: build/linux/mdlight.desktop
     dst: /usr/share/applications/mdlight.desktop
-    type: desktop
   - src: build/appicon.png
     dst: /usr/share/icons/hicolor/256x256/apps/mdlight.png
   - src: build/appicon.png

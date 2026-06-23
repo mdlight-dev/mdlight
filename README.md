@@ -1,5 +1,11 @@
 # MDLight
 
+![Version](https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=4a90d9&style=for-the-badge)
+![License](https://img.shields.io/github/license/mdlight-dev/mdlight?color=4a90d9&style=for-the-badge)
+![CI](https://img.shields.io/github/actions/workflow/status/mdlight-dev/mdlight/release.yml?label=build&color=4a90d9&style=for-the-badge)
+![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-4a90d9?style=for-the-badge)
+![Language](https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=for-the-badge)
+
 A beautiful, lightweight Markdown reader — no vaults, no plugins, no accounts. Just open a file and read.
 
 ## Quick start
@@ -37,6 +43,8 @@ Download from the [releases page](https://github.com/le-blanc/mdlight/releases):
 - `mdlight_vX.Y.Z_windows_amd64` — Windows x86_64
 
 Linux also gets `.deb`, `.rpm`, and `.apk` packages.
+
+[![Download](https://img.shields.io/badge/Download%20Latest-4a90d9?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mdlight-dev/mdlight/releases/latest)
 
 ### From source
 

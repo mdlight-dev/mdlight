@@ -17,14 +17,19 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: amd64
+            pkg_deps: libgtk-3-dev libwebkit2gtk-4.1-dev
           - os: ubuntu-24.04-arm
             arch: arm64
+            pkg_deps: libgtk-3-dev libwebkit2gtk-4.1-dev
           - os: macos-latest
             arch: amd64
+            pkg_deps: ""
           - os: macos-latest
             arch: arm64
+            pkg_deps: ""
           - os: windows-latest
             arch: amd64
+            pkg_deps: ""
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
@@ -32,27 +37,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install system deps (Linux)
-        if: runner.os == 'Linux'
+      - name: Install system deps
+        if: matrix.pkg_deps != ''
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo apt-get install -y -qq ${{ matrix.pkg_deps }}
 
-      - name: Install Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
           cache: true
 
-      - name: Install Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
       - name: Build frontend
         run: |
@@ -66,88 +68,27 @@ jobs:
           CGO_ENABLED: 1
           GOARCH: ${{ matrix.arch }}
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: mdlight-${{ github.ref_name }}-${{ runner.os }}-${{ matrix.arch }}
           path: build/bin/*
           if-no-files-found: error
 
-  packages:
-    needs: build
-    if: runner.os == 'Linux'
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64, arm64]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install system deps
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq libgtk-3-dev libwebkit2gtk-4.1-dev
-
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-          cache: true
-
-      - name: Install Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm ci
-          npm run build
-
-      - name: Build .deb/.rpm with NFPM
-        run: |
-          cd /home/runner/go/bin
-          goreleaser nfpm --clean --single-target \
-            --config ../../../.goreleaser.yml \
-            --goos linux --goarch ${{ matrix.arch }}
-        env:
-          GOOS: linux
-          GOARCH: ${{ matrix.arch }}
-        working-directory: ${{ github.workspace }}
-
-      - name: Upload packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: mdlight-${{ github.ref_name }}-linux-${{ matrix.arch }}-packages
-          path: dist/*.deb
-          if-no-files-found: warn
-
   release:
-    needs: [build, packages]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: _artifacts
 
-      - name: Generate checksums
-        run: |
+      - run: |
           cd _artifacts
           find . -type f -exec sha256sum {} \; > ../checksums.txt
 
-      - name: Create release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           files: |
             _artifacts/**/*

@@ -18,14 +18,15 @@ jobs:
             goos: linux
             goarch: amd64
             pkg_deps: libgtk-3-dev libwebkit2gtk-4.0-dev
-          - os: macos-13
-            goos: darwin
-            goarch: amd64
-            pkg_deps: ""
-          - os: macos-latest
-            goos: darwin
-            goarch: arm64
-            pkg_deps: ""
+          # macOS disabled (Wails SDK linker issue on ARM, waiting for runner on Intel)
+          # - os: macos-13
+          #   goos: darwin
+          #   goarch: amd64
+          #   pkg_deps: ""
+          # - os: macos-latest
+          #   goos: darwin
+          #   goarch: arm64
+          #   pkg_deps: ""
           - os: windows-latest
             goos: windows
             goarch: amd64

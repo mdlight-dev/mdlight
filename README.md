@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mdlight-dev/mdlight/main/build/mdlight_banner.png" alt="MDLight Banner">
+</p>
+
 # MDLight
 
 ![Version](https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=4a90d9&style=flat)

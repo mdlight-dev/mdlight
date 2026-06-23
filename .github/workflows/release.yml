@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  goreleaser:
+  build:
     strategy:
       fail-fast: false
       matrix:
@@ -18,7 +18,7 @@ jobs:
             goos: linux
             goarch: amd64
             pkg_deps: libgtk-3-dev libwebkit2gtk-4.0-dev
-          # macOS disabled (Wails SDK linker issue on ARM, waiting for runner on Intel)
+          # macOS disabled (Wails SDK linker issue on ARM runners)
           # - os: macos-13
           #   goos: darwin
           #   goarch: amd64
@@ -55,25 +55,34 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - uses: goreleaser/goreleaser-action@v6
-        with:
-          version: latest
-          args: release --single-target --clean --skip-publish --skip-announce --skip-validate
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Build with Wails
+        run: wails build -tags "desktop,production" -ldflags "-s -w -X main.version=${{ github.ref_name }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CGO_ENABLED: 1
+          GOARCH: ${{ matrix.goarch }}
+
+      - name: Rename binary for release
+        shell: bash
+        run: |
+          ext=""
+          [ "${{ matrix.goos }}" = "windows" ] && ext=".exe"
+          mv build/bin/mdlight$ext build/bin/mdlight_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}$ext
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/mdlight_*
+          name: mdlight-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build/bin/mdlight_*
 
   release:
-    needs: goreleaser
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - uses: actions/download-artifact@v4
         with:
           path: _artifacts

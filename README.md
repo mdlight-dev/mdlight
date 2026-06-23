@@ -34,15 +34,22 @@ mdlight                         # opens file picker
 
 ### Pre-built binaries
 
-Download from the [releases page](https://github.com/le-blanc/mdlight/releases):
+Download the latest `tar.gz` archive from the [releases page](https://github.com/mdlight-dev/mdlight/releases) for your platform.
 
-- `mdlight_vX.Y.Z_linux_amd64` — Linux x86_64
-- `mdlight_vX.Y.Z_linux_arm64` — Linux ARM64
-- `mdlight_vX.Y.Z_darwin_amd64` — macOS Intel
-- `mdlight_vX.Y.Z_darwin_arm64` — macOS Apple Silicon
-- `mdlight_vX.Y.Z_windows_amd64` — Windows x86_64
+**Linux:**
+```sh
+# Replace VERSION and ARCH with the actual filename
+tar -xzf mdlight_VERSION_linux_ARCH.tar.gz
+sudo mv mdlight /usr/local/bin/
+```
 
-Linux also gets `.deb`, `.rpm`, and `.apk` packages.
+**macOS:**
+```sh
+tar -xzf mdlight_VERSION_darwin_ARCH.tar.gz
+sudo mv mdlight /usr/local/bin/
+```
+
+**Windows:** Download the `.tar.gz` archive, extract, and add `mdlight.exe` to your PATH.
 
 [![Download](https://img.shields.io/badge/Download%20Latest-4a90d9?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mdlight-dev/mdlight/releases/latest)
 
@@ -62,7 +69,7 @@ xcode-select --install
 ```
 
 ```sh
-git clone https://github.com/le-blanc/mdlight
+git clone https://github.com/mdlight-dev/mdlight
 cd mdlight
 make build
 ./build/bin/mdlight README.md

@@ -62,16 +62,19 @@ Packages include a desktop entry so MDLight appears in your application menu.
 
 ### Pre-built binaries
 
-Download the raw binary for your platform from the [releases page](https://github.com/mdlight-dev/mdlight/releases):
+Download the raw binary for your platform from the [releases page](https://github.com/mdlight-dev/mdlight/releases).
 
 **Linux:**
 ```sh
-wget https://github.com/mdlight-dev/mdlight/releases/download/VERSION/mdlight_VERSION_linux_ARCH
-chmod +x mdlight_VERSION_linux_ARCH
-sudo mv mdlight_VERSION_linux_ARCH /usr/local/bin/mdlight
+# Download the latest Linux binary
+url=$(curl -s https://api.github.com/repos/mdlight-dev/mdlight/releases/latest \
+  | grep "browser_download_url.*linux_amd64\"" | cut -d'"' -f4)
+curl -sL "$url" -o mdlight
+chmod +x mdlight
+sudo mv mdlight /usr/local/bin/
 ```
 
-**Windows:** Download `mdlight_VERSION_windows_amd64.exe`, rename to `mdlight.exe`, and add to PATH.
+**Windows:** Download the `windows_amd64` binary from the [releases page](https://github.com/mdlight-dev/mdlight/releases), rename to `mdlight.exe`, and add to PATH.
 
 [![Download](https://img.shields.io/badge/Download%20Latest-4a90d9?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mdlight-dev/mdlight/releases/latest)
 

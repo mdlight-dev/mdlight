@@ -81,15 +81,16 @@ User themes: place `.css` files in `~/.config/mdlight/themes/` and reference by 
 
 ## Performance
 
-Measured on Linux x86_64 (i7-11800H, 32GB RAM), opening a typical Markdown document:
+Measured on Linux x86_64 (Intel Core i3-3110M @ 2.40GHz, 4 threads, 7.6 GiB RAM), opening a typical Markdown document:
 
 | Metric | Measured | LDD target |
 |--------|----------|------------|
 | Resident memory (RSS) | ~210 MB | 70–150 MB |
-| Startup (cold, WebKit init) | ~1 s | <500 ms |
-| First render (OpenFile) | ~2–3 s | — |
+| Binary size | 14 MB | — |
+| WebKit init (startup) | ~250 ms | <500 ms |
+| First render (OpenFile) | ~850 ms | — |
 
-The RSS includes the WebKitGTK webview engine, which is the majority of the footprint. Startup times vary significantly with system load; on a quiet system expect ~600 ms WebKit init + ~1 s first render. Plain Markdown files incur no extra loading; Mermaid and math libraries are only fetched when the document contains that syntax (v2.0).
+The RSS includes the WebKitGTK webview engine, which is the majority of the footprint. Plain Markdown files incur no extra loading; Mermaid and math libraries are only fetched when the document contains that syntax (v2.0).
 
 ## Project structure
 

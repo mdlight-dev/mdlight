@@ -44,7 +44,7 @@ Download from the [releases page](https://github.com/le-blanc/mdlight/releases):
 
 Linux also gets `.deb`, `.rpm`, and `.apk` packages.
 
-[![Download](https://img.shields.io/badge/Download%20Latest-4a90d9?style=flat&logo=github&logoColor=white)](https://github.com/mdlight-dev/mdlight/releases/latest)
+[![Download](https://img.shields.io/badge/Download%20Latest-4a90d9?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mdlight-dev/mdlight/releases/latest)
 
 ### From source
 

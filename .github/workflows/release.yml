@@ -78,15 +78,15 @@ jobs:
         if: matrix.goos == 'linux'
         run: |
           mkdir -p _packages
+          # nfpm doesn't expand templates in standalone mode, substitute manually
+          sed "s/VERSION_PLACEHOLDER/${{ github.ref_name }}/" build/linux/nfpm.yml > /tmp/nfpm.yml
           for fmt in deb rpm apk arch; do
             echo "Building $fmt package..."
-            nfpm package --config build/linux/nfpm.yml --packager "$fmt" && \
+            nfpm package --config /tmp/nfpm.yml --packager "$fmt" && \
               mv -v mdlight* _packages/ 2>/dev/null || \
               echo "Warning: $fmt package failed (continuing)"
           done
           ls -la _packages/ || echo "No packages built"
-        env:
-          MDLIGHT_VERSION: ${{ github.ref_name }}
 
       - name: Rename binary for release
         shell: bash

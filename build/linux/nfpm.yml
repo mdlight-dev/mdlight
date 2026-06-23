@@ -1,7 +1,7 @@
 name: mdlight
 arch: amd64
 platform: linux
-version: '{{ env "MDLIGHT_VERSION" }}'
+version: VERSION_PLACEHOLDER
 section: default
 priority: extra
 maintainer: MDLight Maintainers

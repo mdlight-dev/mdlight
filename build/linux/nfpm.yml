@@ -1,0 +1,35 @@
+name: mdlight
+arch: amd64
+platform: linux
+version: "{{ .Env.MDLIGHT_VERSION }}"
+section: default
+priority: extra
+maintainer: MDLight Maintainers
+description: A beautiful, lightweight Markdown reader
+vendor: MDLight
+homepage: https://github.com/mdlight-dev/mdlight
+license: MIT
+contents:
+  - src: build/bin/mdlight
+    dst: /usr/bin/mdlight
+    type: binary
+  - src: build/linux/mdlight.desktop
+    dst: /usr/share/applications/mdlight.desktop
+    type: desktop
+  - src: build/appicon.png
+    dst: /usr/share/icons/hicolor/256x256/apps/mdlight.png
+  - src: build/appicon.png
+    dst: /usr/share/pixmaps/mdlight.png
+overrides:
+  deb:
+    depends:
+      - libgtk-3-0
+      - libwebkit2gtk-4.0-37
+  rpm:
+    depends:
+      - libgtk-3
+      - webkit2gtk4.0
+  apk:
+    depends:
+      - gtk+3.0
+      - webkit2gtk-4.0

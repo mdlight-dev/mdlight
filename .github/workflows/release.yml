@@ -69,6 +69,21 @@ jobs:
           CGO_ENABLED: 1
           GOARCH: ${{ matrix.goarch }}
 
+      # nfpm packaging (Linux only)
+      - name: Install nfpm
+        if: matrix.goos == 'linux'
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+
+      - name: Build nfpm packages
+        if: matrix.goos == 'linux'
+        run: |
+          mkdir -p _packages
+          for fmt in deb rpm apk arch; do
+            nfpm package --config build/linux/nfpm.yml --packager "$fmt" -o "_packages/"
+          done
+        env:
+          MDLIGHT_VERSION: ${{ github.ref_name }}
+
       - name: Rename binary for release
         shell: bash
         run: |
@@ -79,7 +94,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: mdlight-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: build/bin/mdlight_*
+          path: |
+            build/bin/mdlight_*
+            _packages/*
+            scripts/install.sh
 
   release:
     needs: build
@@ -91,12 +109,17 @@ jobs:
 
       - name: Generate checksums
         run: |
-          find _artifacts -type f -name 'mdlight_*' -exec sha256sum {} \; > checksums.txt
+          find _artifacts -type f \( -name 'mdlight_*' -o -name '*.deb' -o -name '*.rpm' -o -name '*.apk' -o -name '*.pkg.tar.*' -o -name 'install.sh' \) -exec sha256sum {} \; > checksums.txt
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             _artifacts/**/mdlight_*
+            _artifacts/**/*.deb
+            _artifacts/**/*.rpm
+            _artifacts/**/*.apk
+            _artifacts/**/*.pkg.tar.*
+            _artifacts/**/install.sh
             checksums.txt
           draft: false
           prerelease: false

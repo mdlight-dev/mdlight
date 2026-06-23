@@ -32,24 +32,46 @@ mdlight                         # opens file picker
 
 ## Installation
 
+### Quick install (Linux / macOS)
+
+```sh
+curl -sSL https://github.com/mdlight-dev/mdlight/releases/latest/download/install.sh | bash
+```
+
+Installs to `~/.local/bin/` and adds it to your PATH. Also installs a desktop entry and icon for the application menu.
+
+### Package manager (Linux)
+
+Download the appropriate package for your distro from the [releases page](https://github.com/mdlight-dev/mdlight/releases):
+
+```sh
+# Debian / Ubuntu
+sudo dpkg -i mdlight_*.deb
+
+# Fedora / RHEL
+sudo rpm -i mdlight-*.rpm
+
+# Alpine
+sudo apk add mdlight-*.apk
+
+# Arch
+sudo pacman -U mdlight-*.pkg.tar.zst
+```
+
+Packages include a desktop entry so MDLight appears in your application menu.
+
 ### Pre-built binaries
 
-Download the latest `tar.gz` archive from the [releases page](https://github.com/mdlight-dev/mdlight/releases) for your platform.
+Download the raw binary for your platform from the [releases page](https://github.com/mdlight-dev/mdlight/releases):
 
 **Linux:**
 ```sh
-# Replace VERSION and ARCH with the actual filename
-tar -xzf mdlight_VERSION_linux_ARCH.tar.gz
-sudo mv mdlight /usr/local/bin/
+wget https://github.com/mdlight-dev/mdlight/releases/download/VERSION/mdlight_VERSION_linux_ARCH
+chmod +x mdlight_VERSION_linux_ARCH
+sudo mv mdlight_VERSION_linux_ARCH /usr/local/bin/mdlight
 ```
 
-**macOS:**
-```sh
-tar -xzf mdlight_VERSION_darwin_ARCH.tar.gz
-sudo mv mdlight /usr/local/bin/
-```
-
-**Windows:** Download the `.tar.gz` archive, extract, and add `mdlight.exe` to your PATH.
+**Windows:** Download `mdlight_VERSION_windows_amd64.exe`, rename to `mdlight.exe`, and add to PATH.
 
 [![Download](https://img.shields.io/badge/Download%20Latest-4a90d9?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mdlight-dev/mdlight/releases/latest)
 

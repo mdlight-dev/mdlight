@@ -10,6 +10,8 @@
   <img src="https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=flat">
 </p>
 
+## About
+
 A beautiful, lightweight Markdown reader — no vaults, no plugins, no accounts. Just open a file and read.
 
 ## Quick start

@@ -8,7 +8,7 @@ maintainer: MDLight Maintainers
 description: A beautiful, lightweight Markdown reader
 vendor: MDLight
 homepage: https://github.com/mdlight-dev/mdlight
-license: Apache 2.0
+license: MIT
 contents:
   - src: build/bin/mdlight
     dst: /usr/bin/mdlight

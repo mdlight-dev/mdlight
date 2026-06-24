@@ -7,7 +7,7 @@ pkgrel=1
 pkgdesc="A beautiful, lightweight Markdown reader"
 arch=('x86_64' 'aarch64')
 url="https://github.com/mdlight-dev/mdlight"
-license=('Apache')
+license=('MIT')
 depends=(
   'gtk3'
   'webkit2gtk-4.1'

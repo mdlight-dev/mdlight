@@ -166,3 +166,11 @@ mdlight/
 ## License
 
 [MIT](LICENSE)
+
+## Support
+
+If you find MDLight useful, consider supporting development:
+
+- **BTC**: `bc1qarlskqtdq4wsdudecktv6g7zqv5jv52at9k5uk`
+- **ETH/ERC-20**: `0x03d42691a1f0d9af62899813e1f3937da0f6039b`
+- **SOL/SLP**: `J9jneBCAW8NaoSj5KekxLyxBcYbzNq3F2Wshdar7FHdf`

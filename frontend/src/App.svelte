@@ -266,6 +266,7 @@
   function handlePlaceholderClick(e) {
     const el = e.target.closest('.remote-image-placeholder');
     if (!el) return;
+    e.preventDefault();
     loadRemoteImage(el);
   }
 
@@ -277,14 +278,29 @@
     loadRemoteImage(el);
   }
 
-  function loadRemoteImage(el) {
+  async function loadRemoteImage(el) {
     const src = el.dataset.src;
     if (!src) return;
-    const img = document.createElement('img');
-    img.alt = el.textContent.replace('[image] ', '').replace(' (click to load)', '').trim();
-    img.src = src;
-    img.className = 'remote-image-loaded';
-    el.replaceWith(img);
+    try {
+      const dataUri = await LoadRemoteImage(src);
+      const img = document.createElement('img');
+      img.alt = el.textContent.replace('[image] ', '').replace(' (click to load)', '').trim();
+      img.src = dataUri;
+      img.className = 'remote-image-loaded';
+      el.replaceWith(img);
+    } catch {
+      el.textContent = el.textContent.replace('(click to load)', '(failed to load)');
+    }
+  }
+
+  function handleMarkdownClick(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#')) return; // internal anchor - let webview handle
+    e.preventDefault();
+    window.runtime.BrowserOpenURL(href);
   }
 
   // Clean up event listeners on unmount
@@ -322,6 +338,7 @@
     class="md-body"
     data-needs-mermaid={needsMermaid}
     data-needs-math={needsMath}
+    on:click={handleMarkdownClick}
   >
     {@html html}
   </article>

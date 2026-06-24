@@ -1,14 +1,10 @@
 # MDLight
 
-![MDLight](build/output.gif)
+![MDLight](../../../../../Videos/output.gif)
 
-<p align="center">
-  <img src="https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=4a90d9&style=flat">
-  <img src="https://img.shields.io/github/license/mdlight-dev/mdlight?color=4a90d9&style=flat">
-  <img src="https://img.shields.io/github/actions/workflow/status/mdlight-dev/mdlight/release.yml?label=build&color=4a90d9&style=flat">
-  <img src="https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-4a90d9?style=flat">
-  <img src="https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=flat">
-</p>
+| | | |
+|:-:|:-:|:-:|
+|  ![version](https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=4a90d9&style=flat) | ![platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-4a90d9?style=flat) | ![language](https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=flat) |
 
 A beautiful, lightweight Markdown reader — no vaults, no plugins, no accounts. Just open a file and read.
 

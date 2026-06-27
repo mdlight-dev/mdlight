@@ -23,7 +23,7 @@ lint:
 
 # ── Building (native) ──────────────────────────────────────────────────────────
 
-build: frontend
+build: frontend sync-themes
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=1 \
 		go build -trimpath -tags "desktop,production" \
 		-ldflags="-s -w -X main.version=$(VERSION)" \
@@ -45,6 +45,11 @@ build-windows:
 
 frontend:
 	cd frontend && npm install && npm run build
+
+# sync-themes copies theme CSS from the frontend source tree into the Go embed
+# target, keeping them in sync. The frontend copy is authoritative.
+sync-themes:
+	cp frontend/src/themes/builtin/*.css internal/theme/builtin/
 
 # ── Benchmarks ──────────────────────────────────────────────────────────────────
 

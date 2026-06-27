@@ -7,6 +7,7 @@
     GetStartupTheme,
     PickFile,
     ResolveTheme,
+    LoadRemoteImage,
   } from '../wailsjs/go/main/App';
 
   // ?raw tells Vite to import the file content as a plain string — bundled

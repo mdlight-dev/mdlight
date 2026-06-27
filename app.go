@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -159,6 +162,28 @@ func (a *App) PickFile() (string, error) {
 		return "", err
 	}
 	return path, nil
+}
+
+// LoadRemoteImage downloads a remote image and returns it as a base64 data URI.
+// Called by the frontend when a user clicks a remote-image placeholder.
+// A 10-second timeout prevents hanging on unreachable hosts.
+func (a *App) LoadRemoteImage(url string) (string, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("LoadRemoteImage: fetch: %w", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("LoadRemoteImage: read: %w", err)
+	}
+
+	mimeType := http.DetectContentType(data)
+	encoded := base64.StdEncoding.EncodeToString(data)
+
+	return "data:" + mimeType + ";base64," + encoded, nil
 }
 
 // ── Theme operations ─────────────────────────────────────────────────────────

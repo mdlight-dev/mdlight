@@ -57,6 +57,7 @@ main() {
     # Install .desktop file
     desktop_url="https://raw.githubusercontent.com/${REPO}/${version}/build/linux/mdlight.desktop"
     if curl -sSL "$desktop_url" -o "${APP_DIR}/mdlight.desktop"; then
+        chmod +x "${APP_DIR}/mdlight.desktop"
         echo "Desktop entry installed to ${APP_DIR}/mdlight.desktop"
     else
         echo "Warning: could not download .desktop file (no network or version tag not on main branch)"
@@ -75,6 +76,7 @@ Keywords=markdown;reader;editor;md;
 StartupNotify=true
 StartupWMClass=mdlight
 EOF
+        chmod +x "${APP_DIR}/mdlight.desktop"
     fi
 
     # Download icon

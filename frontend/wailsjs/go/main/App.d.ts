@@ -11,6 +11,8 @@ export function GetStartupTheme():Promise<string>;
 
 export function ListThemes():Promise<Array<theme.Info>>;
 
+export function LoadRemoteImage(arg1:string):Promise<string>;
+
 export function OpenFile(arg1:string):Promise<render.DocumentPayload>;
 
 export function PickFile():Promise<string>;

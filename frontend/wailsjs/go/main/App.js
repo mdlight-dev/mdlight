@@ -18,6 +18,10 @@ export function ListThemes() {
   return window['go']['main']['App']['ListThemes']();
 }
 
+export function LoadRemoteImage(arg1) {
+  return window['go']['main']['App']['LoadRemoteImage'](arg1);
+}
+
 export function OpenFile(arg1) {
   return window['go']['main']['App']['OpenFile'](arg1);
 }

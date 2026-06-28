@@ -9,10 +9,14 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+//go:embed build/appicon.png
+var appIcon []byte
 
 func main() {
 	filePath, themeName, bench := parseArgs()
@@ -27,6 +31,9 @@ func main() {
 		Title:  "mdlight",
 		Width:  1024,
 		Height: 768,
+		Linux: &linux.Options{
+			Icon: appIcon,
+		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

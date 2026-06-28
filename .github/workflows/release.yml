@@ -101,7 +101,13 @@ jobs:
           path: |
             build/bin/mdlight_*
             _packages/*
-            scripts/install.sh
+
+      - name: Upload install script (Linux only)
+        if: matrix.goos == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: install-script
+          path: scripts/install.sh
 
   release:
     needs: build
@@ -123,7 +129,7 @@ jobs:
             _artifacts/**/*.rpm
             _artifacts/**/*.apk
             _artifacts/**/*.pkg.tar.*
-            _artifacts/**/install.sh
+            _artifacts/install-script/install.sh
             checksums.txt
           draft: false
           prerelease: false

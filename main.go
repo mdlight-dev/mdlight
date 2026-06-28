@@ -32,7 +32,8 @@ func main() {
 		Width:  1024,
 		Height: 768,
 		Linux: &linux.Options{
-			Icon: appIcon,
+			Icon:        appIcon,
+			ProgramName: "mdlight",
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,

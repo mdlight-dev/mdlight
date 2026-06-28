@@ -54,14 +54,20 @@ main() {
     chmod +x "${BIN_DIR}/mdlight${ext}"
     echo "Binary installed to ${BIN_DIR}/mdlight${ext}"
 
+    # Remove stale binary from common system paths
+    if [ -f /usr/local/bin/mdlight ] && [ "$(dirname "$BIN_DIR")" != "/usr/local/bin" ]; then
+        echo "Warning: old mdlight found at /usr/local/bin/. Run 'sudo rm /usr/local/bin/mdlight' to avoid conflicts."
+    fi
+
     # Install .desktop file
     desktop_url="https://raw.githubusercontent.com/${REPO}/${version}/build/linux/mdlight.desktop"
     if curl -sSL "$desktop_url" -o "${APP_DIR}/mdlight.desktop"; then
         chmod +x "${APP_DIR}/mdlight.desktop"
+        sed -i "s|^Exec=mdlight |Exec=${BIN_DIR}/mdlight |" "${APP_DIR}/mdlight.desktop"
         echo "Desktop entry installed to ${APP_DIR}/mdlight.desktop"
     else
         echo "Warning: could not download .desktop file (no network or version tag not on main branch)"
-        cat > "${APP_DIR}/mdlight.desktop" << 'EOF'
+        cat > "${APP_DIR}/mdlight.desktop" << EOF
 [Desktop Entry]
 Type=Application
 Name=MDLight
@@ -84,6 +90,26 @@ EOF
     if curl -sSL "$icon_url" -o "${ICON_DIR}/mdlight.png"; then
         cp "${ICON_DIR}/mdlight.png" "${PIXMAPS_DIR}/mdlight.png"
         echo "Icon installed"
+    fi
+
+    # Update icon theme cache
+    HICOLOR_DIR="${HOME}/.local/share/icons/hicolor"
+    if [ -d "$HICOLOR_DIR" ] && [ ! -f "$HICOLOR_DIR/index.theme" ]; then
+        cat > "$HICOLOR_DIR/index.theme" << EOF
+[Icon Theme]
+Name=Hicolor
+Comment=Fallback icon theme
+Hidden=true
+Directories=256x256/apps
+
+[256x256/apps]
+Size=256
+Context=Applications
+Type=Threshold
+EOF
+    fi
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache "$HICOLOR_DIR" 2>/dev/null || true
     fi
 
     # Update desktop database

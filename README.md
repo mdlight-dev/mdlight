@@ -40,10 +40,12 @@ mdlight                         # opens file picker
 ### Quick install (Linux)
 
 ```sh
-curl -sSL https://github.com/mdlight-dev/mdlight/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/mdlight-dev/mdlight/releases/latest/download/install.sh | bash
 ```
 
 Installs to `~/.local/bin/` and adds it to your PATH. Also installs a desktop entry and icon for the application menu.
+
+> **Troubleshooting:** If you see `curl: (23) client returned ERROR on write`, remove the existing binary first with `rm -f ~/.local/bin/mdlight` and retry.
 
 > **macOS:** Not currently available as a pre-built binary due to a Wails SDK linker issue on CI runners. You can build from source (see below).
 
@@ -74,9 +76,9 @@ Download the raw binary for your platform from the [releases page](https://githu
 **Linux:**
 ```sh
 # Download the latest Linux binary
-url=$(curl -s https://api.github.com/repos/mdlight-dev/mdlight/releases/latest \
+url=$(curl -fs https://api.github.com/repos/mdlight-dev/mdlight/releases/latest \
   | grep "browser_download_url.*linux_amd64\"" | cut -d'"' -f4)
-curl -sL "$url" -o mdlight
+curl -fsL "$url" -o mdlight
 chmod +x mdlight
 sudo mv mdlight /usr/local/bin/
 ```

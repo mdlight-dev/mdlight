@@ -60,7 +60,7 @@
 
     /* ------------------------------------------------------------------
        Font stacks
-       Literata and JetBrains Mono are bundled as WOFF2 variable fonts
+       Literata and JetBrains Mono are bundled as variable fonts
        in frontend/src/assets/fonts/ — they are always available.
        The fallback chain exists only for the unlikely case the embed
        fails (e.g. a local dev build with missing assets).
@@ -78,12 +78,6 @@
     ------------------------------------------------------------------ */
     --md-max-width:   68ch;
     --md-line-height: 1.75;
-
-    /* ------------------------------------------------------------------
-       Overlays & shadows — for the conflict dialog
-    ------------------------------------------------------------------ */
-    --md-overlay-bg: rgba(10, 14, 22, 0.72);
-    --md-shadow:      rgba(0, 0, 0, 0.45);
 
     /* ------------------------------------------------------------------
        Error color — used by the .error state in style.css

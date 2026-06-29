@@ -45,7 +45,7 @@
 /* JetBrains Mono — roman */
 @font-face {
     font-family: "JetBrains Mono";
-    src: url("/src/assets/fonts/JetBrainsMono[wght].woff2") format("woff2");
+    src: url("/src/assets/fonts/JetBrainsMono[wght].ttf") format("truetype");
     font-weight: 100 800;
     font-style: normal;
     font-display: swap;
@@ -54,7 +54,7 @@
 /* JetBrains Mono — italic */
 @font-face {
     font-family: "JetBrains Mono";
-    src: url("/src/assets/fonts/JetBrainsMono-Italic[wght].woff2") format("woff2");
+    src: url("/src/assets/fonts/JetBrainsMono-Italic[wght].ttf") format("truetype");
     font-weight: 100 800;
     font-style: italic;
     font-display: swap;
@@ -539,72 +539,6 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Conflict overlay (dirty + external file:changed)
-   Theme-aware, never a native OS dialog.
-   -------------------------------------------------------------------------- */
-
-.conflict-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--md-overlay-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-}
-
-.conflict-dialog {
-    background: var(--md-bg);
-    border: 1px solid var(--md-hr-color);
-    border-radius: 8px;
-    padding: 2rem 2.5rem;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 8px 32px var(--md-shadow);
-}
-
-.conflict-dialog p {
-    margin: 0 0 1.5rem;
-    font-size: 0.95rem;
-    color: var(--md-fg);
-}
-
-.conflict-actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-}
-
-.conflict-btn {
-    padding: 0.45em 1.1em;
-    border-radius: 4px;
-    border: 1px solid var(--md-code-border);
-    font-family: var(--md-font-body);
-    font-size: 0.875rem;
-    cursor: pointer;
-    background: var(--md-code-bg);
-    color: var(--md-fg);
-    transition: background 0.12s ease;
-}
-
-.conflict-btn:hover {
-    background: var(--md-link-color);
-    color: var(--md-bg);
-    border-color: var(--md-link-color);
-}
-
-.conflict-btn.primary {
-    background: var(--md-link-color);
-    color: var(--md-bg);
-    border-color: var(--md-link-color);
-}
-
-.conflict-btn.primary:hover {
-    background: var(--md-link-hover);
-    border-color: var(--md-link-hover);
-}
-
-/* --------------------------------------------------------------------------
    Scrollbar styling — WebKitGTK supports these
    -------------------------------------------------------------------------- */
 
@@ -635,7 +569,5 @@ body {
         scroll-behavior: auto;
     }
 
-    .conflict-btn {
-        transition: none;
-    }
+
 }

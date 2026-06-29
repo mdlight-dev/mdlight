@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=4a90d9&style=flat">
   <img src="https://img.shields.io/badge/license-MIT-4a90d9?style=flat">
   <img src="https://img.shields.io/github/actions/workflow/status/mdlight-dev/mdlight/release.yml?label=build&color=4a90d9&style=flat">
-  <img src="https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-4a90d9?style=flat">
+  <img src="https://img.shields.io/badge/platform-linux%20%7C%20windows-4a90d9?style=flat">
   <img src="https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=flat">
 </p>
 
@@ -37,13 +37,15 @@ mdlight                         # opens file picker
 
 ## Installation
 
-### Quick install (Linux / macOS)
+### Quick install (Linux)
 
 ```sh
 curl -sSL https://github.com/mdlight-dev/mdlight/releases/latest/download/install.sh | bash
 ```
 
 Installs to `~/.local/bin/` and adds it to your PATH. Also installs a desktop entry and icon for the application menu.
+
+> **macOS:** Not currently available as a pre-built binary due to a Wails SDK linker issue on CI runners. You can build from source (see below).
 
 ### Package manager (Linux)
 

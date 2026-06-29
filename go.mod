@@ -1,6 +1,6 @@
 module mdlight
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
@@ -43,5 +43,3 @@ require (
 	golang.org/x/text v0.38.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
-
-// replace github.com/wailsapp/wails/v2 v2.12.0 => /home/oc/Documents/local_dev/zuhayrb

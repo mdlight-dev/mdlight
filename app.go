@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"mdlight/internal/render"
+	"mdlight/internal/state"
 	"mdlight/internal/theme"
 	"mdlight/internal/watch"
 
@@ -99,6 +100,8 @@ func (a *App) OpenFile(path string) (DocumentPayload, error) {
 
 	payload := render.Render(src)
 	payload.HTML = render.RewriteImages(payload.HTML, filepath.Dir(path))
+
+	state.AddRecent(path)
 
 	if a.ctx != nil {
 		wailsruntime.WindowSetTitle(a.ctx, filepath.Base(path))
@@ -214,12 +217,12 @@ func (a *App) ListThemes() ([]ThemeInfo, error) {
 	return theme.List()
 }
 
-// ── Recent files (v1.0 stub) ─────────────────────────────────────────────────
+// ── Recent files ────────────────────────────────────────────────────────────
 
-// GetRecentFiles returns the list of recently opened file paths.
-// Stubbed for v1.0 (internal/state not yet built).
+// GetRecentFiles returns the list of recently opened file paths,
+// most recent first. Persisted to XDG data directory between sessions.
 func (a *App) GetRecentFiles() ([]string, error) {
-	return []string{}, nil
+	return state.RecentFiles(), nil
 }
 
 // ── Internal: file watcher ───────────────────────────────────────────────────

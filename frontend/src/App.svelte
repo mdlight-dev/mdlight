@@ -36,14 +36,6 @@
   // Set on every successful loadFile(); read by the file:changed handler.
   let currentPath = '';
 
-  // ── Edit / conflict state (M5: wired now; activated in v1.0 edit mode) ────
-  //
-  // dirty becomes true when the user has unsaved edits in split-pane edit mode
-  // (v1.0). For v0.1 it is always false — there is no edit mode yet — so the
-  // conflict overlay is structurally wired but never actually shown.
-  let dirty        = false;
-  let showConflict = false;
-
   // ── Zoom state (M7) ─────────────────────────────────────────────────────────
   //
   // zoomLevel is a percentage (100 = default). Applied via CSS transform on
@@ -132,22 +124,6 @@
     }
   }
 
-  // ── Conflict overlay handlers ────────────────────────────────────────────────
-
-  // keepMine dismisses the overlay without reloading. The user's unsaved edits
-  // remain in place. The on-disk version is silently ignored.
-  function keepMine() {
-    showConflict = false;
-  }
-
-  // reloadFromDisk dismisses the overlay, clears dirty state, and reloads the
-  // file from disk — discarding any unsaved edits.
-  async function reloadFromDisk() {
-    showConflict = false;
-    dirty        = false;
-    await loadFile(currentPath);
-  }
-
   // ── Startup ──────────────────────────────────────────────────────────────────
 
   onMount(async () => {
@@ -222,15 +198,7 @@
     // change, not just the first one.
     EventsOn('file:changed', (_changedPath) => {
       if (!currentPath) return;
-
-      if (dirty) {
-        // The user has unsaved edits. Don't silently discard either version —
-        // show the conflict overlay and let them choose.
-        showConflict = true;
-      } else {
-        // Clean state: re-render silently. No user action required.
-        loadFile(currentPath);
-      }
+      loadFile(currentPath);
     });
 
     // ── 5. Keyboard shortcuts (zoom) ────────────────────────────────────────
@@ -343,25 +311,6 @@
   >
     {@html html}
   </article>
-
-  <!-- Conflict overlay: shown when the file changes on disk while dirty === true.
-       In v0.1 dirty is always false so this overlay never appears — but the
-       structure is wired so v1.0 edit mode just needs to flip dirty to true. -->
-  {#if showConflict}
-    <div class="conflict-overlay">
-      <div class="conflict-dialog">
-        <p>This file was changed on disk. What would you like to do?</p>
-        <div class="conflict-actions">
-          <button class="conflict-btn" on:click={keepMine}>
-            Keep my edits
-          </button>
-          <button class="conflict-btn primary" on:click={reloadFromDisk}>
-            Reload from disk
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
 
   <footer class="status-bar">
     <span>{wordCount} words</span>

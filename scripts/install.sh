@@ -49,8 +49,38 @@ main() {
 
     mkdir -p "$BIN_DIR" "$APP_DIR" "$ICON_DIR" "$PIXMAPS_DIR"
 
+    if [ ! -w "$BIN_DIR" ]; then
+        echo "Error: cannot write to ${BIN_DIR}" >&2
+        exit 1
+    fi
+
     echo "Downloading binary..."
-    curl -sSL "$url" -o "${BIN_DIR}/mdlight${ext}"
+    curl -fsSL "$url" -o "${BIN_DIR}/mdlight${ext}" || {
+        echo "Error: failed to download binary from ${url}" >&2
+        rm -f "${BIN_DIR}/mdlight${ext}" 2>/dev/null
+        exit 1
+    }
+
+    size=$(wc -c < "${BIN_DIR}/mdlight${ext}" 2>/dev/null || echo 0)
+    if [ "$size" -lt 1000000 ]; then
+        echo "Error: downloaded file is too small (${size} bytes). Expected at least 1 MB." >&2
+        rm -f "${BIN_DIR}/mdlight${ext}" 2>/dev/null
+        exit 1
+    fi
+
+    if command -v file >/dev/null 2>&1; then
+        filetype=$(file -b "${BIN_DIR}/mdlight${ext}" 2>/dev/null || echo "")
+        case "$filetype" in
+            *ELF*64-bit*executable*|*ELF*64-bit*shared*object*|*Mach-O*64-bit*executable*|*PE32+*executable*)
+                ;;
+            *)
+                echo "Error: downloaded file has unexpected type: ${filetype:-unknown}" >&2
+                rm -f "${BIN_DIR}/mdlight${ext}" 2>/dev/null
+                exit 1
+                ;;
+        esac
+    fi
+
     chmod +x "${BIN_DIR}/mdlight${ext}"
     echo "Binary installed to ${BIN_DIR}/mdlight${ext}"
 

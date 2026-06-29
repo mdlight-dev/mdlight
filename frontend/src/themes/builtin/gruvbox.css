@@ -1,0 +1,109 @@
+/* ==========================================================================
+   MDLight — gruvbox.css
+   A port of the Gruvbox retro theme (morhetz/gruvbox).
+   Warm earth tones, high contrast, comfortable for long reading.
+   ========================================================================== */
+
+:root {
+    --md-bg:             #282828;
+    --md-statusbar-bg:   #1d2021;
+
+    --md-fg:             #ebdbb2;
+    --md-heading-color:  #fbf1c7;
+
+    --md-link-color:     #83a598;
+    --md-link-hover:     #8ec07c;
+
+    --md-blockquote-border: #504945;
+    --md-blockquote-fg:     #a89984;
+
+    --md-code-bg:     #32302f;
+    --md-code-fg:     #ebdbb2;
+    --md-code-border: #504945;
+
+    --md-hr-color:      #504945;
+    --md-table-border:  #504945;
+
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --md-max-width:   68ch;
+    --md-line-height: 1.75;
+
+    --md-error-fg: #fb4934;
+}
+
+.chroma { background: var(--md-code-bg); color: var(--md-code-fg); }
+
+.chroma .err { color: #cc241d; }
+
+.chroma .ln, .chroma .lnt { color: #504945; margin-right: 1em; user-select: none; }
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf { color: #928374; font-style: italic; }
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt { color: #fb4934; font-weight: 600; }
+
+.chroma .o,
+.chroma .ow,
+.chroma .p  { color: #a89984; }
+
+.chroma .n  { color: #ebdbb2; }
+.chroma .na { color: #8ec07c; }
+.chroma .nb { color: #83a598; }
+.chroma .nc { color: #8ec07c; font-weight: 600; }
+.chroma .nd { color: #8ec07c; }
+.chroma .ne { color: #fb4934; font-weight: 600; }
+.chroma .nf { color: #fabd2f; }
+.chroma .ni { color: #ebdbb2; }
+.chroma .nl { color: #ebdbb2; }
+.chroma .nn { color: #8ec07c; }
+.chroma .nt { color: #83a598; }
+.chroma .nv { color: #ebdbb2; }
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss { color: #b8bb26; }
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il { color: #d3869b; }
+
+.chroma .l,
+.chroma .ld { color: #b8bb26; }
+
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: 700; }
+.chroma .gh { color: #fbf1c7; font-weight: 700; }
+.chroma .gi { color: #b8bb26; background: rgba(184, 187, 38, 0.1); display: block; }
+.chroma .gd { color: #fb4934; background: rgba(251, 73, 52, 0.1); display: block; }
+.chroma .gu { color: #8ec07c; font-weight: 700; }
+.chroma .gl { text-decoration: underline; }
+.chroma .gp { color: #504945; font-weight: 700; }

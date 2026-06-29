@@ -1,0 +1,110 @@
+/* ==========================================================================
+   MDLight — murakami.css
+   An original theme inspired by the atmosphere of Haruki Murakami's
+   "Norwegian Wood" — autumn evenings, warm lamplight, quiet melancholy.
+   Deep forest-night charcoal, golden-cream text, faded crimson accents.
+   ========================================================================== */
+
+:root {
+    --md-bg:             #121418;
+    --md-statusbar-bg:   #0d0f13;
+
+    --md-fg:             #c4beb0;
+    --md-heading-color:  #d9d2c4;
+
+    --md-link-color:     #b85c5c;
+    --md-link-hover:     #d47474;
+
+    --md-blockquote-border: #2a3035;
+    --md-blockquote-fg:     #80887a;
+
+    --md-code-bg:     #1a1e24;
+    --md-code-fg:     #c4beb0;
+    --md-code-border: #2a3035;
+
+    --md-hr-color:      #2a3035;
+    --md-table-border:  #2a3035;
+
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --md-max-width:   68ch;
+    --md-line-height: 1.75;
+
+    --md-error-fg: #a85c5c;
+}
+
+.chroma { background: var(--md-code-bg); color: var(--md-code-fg); }
+
+.chroma .err { color: #a85c5c; }
+
+.chroma .ln, .chroma .lnt { color: #2a3035; margin-right: 1em; user-select: none; }
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf { color: #5a6268; font-style: italic; }
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt { color: #b85c5c; font-weight: 600; }
+
+.chroma .o,
+.chroma .ow,
+.chroma .p  { color: #80887a; }
+
+.chroma .n  { color: #c4beb0; }
+.chroma .na { color: #c4a86a; }
+.chroma .nb { color: #b85c5c; }
+.chroma .nc { color: #c4a86a; font-weight: 600; }
+.chroma .nd { color: #c4a86a; }
+.chroma .ne { color: #a85c5c; font-weight: 600; }
+.chroma .nf { color: #c4a86a; }
+.chroma .ni { color: #c4beb0; }
+.chroma .nl { color: #c4beb0; }
+.chroma .nn { color: #c4a86a; }
+.chroma .nt { color: #b85c5c; }
+.chroma .nv { color: #c4beb0; }
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss { color: #7a8a6a; }
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il { color: #b8a070; }
+
+.chroma .l,
+.chroma .ld { color: #7a8a6a; }
+
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: 700; }
+.chroma .gh { color: #d9d2c4; font-weight: 700; }
+.chroma .gi { color: #7a8a6a; background: rgba(122, 138, 106, 0.1); display: block; }
+.chroma .gd { color: #a85c5c; background: rgba(168, 92, 92, 0.1); display: block; }
+.chroma .gu { color: #c4a86a; font-weight: 700; }
+.chroma .gl { text-decoration: underline; }
+.chroma .gp { color: #3a4248; font-weight: 700; }

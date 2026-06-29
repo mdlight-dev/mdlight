@@ -7,6 +7,7 @@
     GetStartupTheme,
     PickFile,
     ResolveTheme,
+    ListThemes,
     LoadRemoteImage,
   } from '../wailsjs/go/main/App';
 
@@ -35,6 +36,41 @@
   // currentPath is the absolute path of the currently open file.
   // Set on every successful loadFile(); read by the file:changed handler.
   let currentPath = '';
+
+  // ── Theme picker state ──────────────────────────────────────────────────────
+  let availableThemes = [];  // populated from ListThemes() on startup
+  let activeTheme    = '';   // name of the currently applied theme
+  let themePickerOpen = false;
+
+  // switchTheme fetches and applies a theme by name. Called by the dropdown
+  // picker in the status bar and usable from the --theme CLI flag path.
+  async function switchTheme(name) {
+    if (!name || name === activeTheme) return;
+    try {
+      const css = await ResolveTheme(name);
+      applyTheme(css);
+      applyChroma(css);
+      activeTheme = name;
+      themeError = '';
+    } catch (e) {
+      themeError = String(e);
+    }
+  }
+
+  function toggleThemePicker() {
+    themePickerOpen = !themePickerOpen;
+  }
+
+  function selectTheme(name) {
+    switchTheme(name);
+    themePickerOpen = false;
+  }
+
+  function handleClickOutside(e) {
+    if (themePickerOpen && !e.target.closest('.theme-picker-wrap')) {
+      themePickerOpen = false;
+    }
+  }
 
   // ── Zoom state (M7) ─────────────────────────────────────────────────────────
   //
@@ -127,20 +163,23 @@
   // ── Startup ──────────────────────────────────────────────────────────────────
 
   onMount(async () => {
-    // ── 1. Resolve theme ────────────────────────────────────────────────────
-    // Call GetStartupFile and GetStartupTheme in parallel — both are simple
-    // struct field reads on the Go side, no I/O, so there's no ordering
-    // dependency between them.
-    const [startupFile, startupTheme] = await Promise.all([
+    // ── 1. Resolve theme & fetch theme list ─────────────────────────────────
+    // GetStartupFile, GetStartupTheme, and ListThemes are all Wails-bound Go
+    // calls — they are independent and can run in parallel.
+    const [startupFile, startupTheme, themes] = await Promise.all([
       GetStartupFile(),
       GetStartupTheme(),
+      ListThemes().catch(() => []),
     ]);
+
+    availableThemes = themes;
 
     if (startupTheme) {
       try {
         const css = await ResolveTheme(startupTheme);
         applyTheme(css);
         applyChroma(css);
+        activeTheme = startupTheme;
       } catch (e) {
         // Theme resolution failed — fall back to the bundled default and keep
         // the error visible in the status bar so the user knows the flag was
@@ -148,11 +187,13 @@
         themeError = String(e);
         applyTheme(defaultDarkCSS);
         applyChroma(defaultDarkCSS);
+        activeTheme = 'default-dark';
       }
     } else {
       // No --theme flag: use the bundled default (no network round-trip).
       applyTheme(defaultDarkCSS);
       applyChroma(defaultDarkCSS);
+      activeTheme = 'default-dark';
     }
 
     // ── 2. Open the file ────────────────────────────────────────────────────
@@ -230,6 +271,9 @@
     // ── 6. Remote image click-to-load ─────────────────────────────────────
     document.addEventListener('click', handlePlaceholderClick);
     document.addEventListener('keydown', handlePlaceholderKeydown);
+
+    // ── 7. Theme picker: close on outside click ──────────────────────────
+    document.addEventListener('click', handleClickOutside);
   });
 
   function handlePlaceholderClick(e) {
@@ -277,6 +321,7 @@
     window.removeEventListener('keydown', handleKeydown);
     document.removeEventListener('click', handlePlaceholderClick);
     document.removeEventListener('keydown', handlePlaceholderKeydown);
+    document.removeEventListener('click', handleClickOutside);
   });
 </script>
 
@@ -317,6 +362,28 @@
     <span>{readingMins} min read</span>
     {#if needsMermaid}<span class="flag">mermaid</span>{/if}
     {#if needsMath}<span class="flag">math</span>{/if}
+    {#if availableThemes.length > 0}
+      <div class="theme-picker-wrap">
+        <button class="theme-picker-btn" on:click={toggleThemePicker}>
+          {activeTheme}
+        </button>
+        {#if themePickerOpen}
+          <div class="theme-picker-menu" role="listbox">
+            {#each availableThemes as theme}
+              <button
+                class="theme-picker-item"
+                class:selected={theme.Name === activeTheme}
+                on:click={() => selectTheme(theme.Name)}
+                role="option"
+                aria-selected={theme.Name === activeTheme}
+              >
+                {theme.Name}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
     {#if themeError}
       <span class="flag" style="color: var(--md-error-fg);" title={themeError}>
         theme error
@@ -331,13 +398,70 @@
 {/if}
 
 <style>
-  /*
-    This block contains only rules that need Svelte's component scoping.
-    As of milestone 5 there are no such rules — all structural classes live
-    in style.css (structure) and the theme file (skin), and the conflict
-    overlay classes are already defined in style.css.
+  .theme-picker-wrap {
+    position: relative;
+    display: inline-block;
+  }
 
-    This block is intentionally empty. It exists as a placeholder so the
-    pattern is clear for any future component-scoped rules.
-  */
+  .theme-picker-btn {
+    background: var(--md-statusbar-bg);
+    color: var(--md-link-color);
+    border: 1px solid var(--md-hr-color);
+    border-radius: 3px;
+    font-family: var(--md-font-mono);
+    font-size: 0.68rem;
+    padding: 0.1em 0.5em;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1.5;
+  }
+
+  .theme-picker-btn:hover,
+  .theme-picker-btn:focus {
+    border-color: var(--md-link-color);
+    outline: none;
+  }
+
+  .theme-picker-menu {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 4px;
+    background: var(--md-bg);
+    border: 1px solid var(--md-hr-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 300;
+    min-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .theme-picker-item {
+    display: block;
+    width: 100%;
+    padding: 0.3em 0.7em;
+    background: transparent;
+    color: var(--md-fg);
+    border: none;
+    font-family: var(--md-font-mono);
+    font-size: 0.68rem;
+    text-align: left;
+    cursor: pointer;
+    line-height: 1.5;
+  }
+
+  .theme-picker-item:hover {
+    background: var(--md-link-color);
+    color: var(--md-bg);
+  }
+
+  .theme-picker-item.selected {
+    color: var(--md-link-color);
+    font-weight: 600;
+  }
+
+  .theme-picker-item.selected:hover {
+    color: var(--md-bg);
+  }
 </style>

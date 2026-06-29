@@ -1,0 +1,109 @@
+/* ==========================================================================
+   MDLight — nord.css
+   A port of the Nord arctic theme (nordtheme.com).
+   Cold blues, snow whites, and frost accents.
+   ========================================================================== */
+
+:root {
+    --md-bg:             #2e3440;
+    --md-statusbar-bg:   #3b4252;
+
+    --md-fg:             #d8dee9;
+    --md-heading-color:  #e5e9f0;
+
+    --md-link-color:     #81a1c1;
+    --md-link-hover:     #88c0d0;
+
+    --md-blockquote-border: #434c5e;
+    --md-blockquote-fg:     #81a1c1;
+
+    --md-code-bg:     #3b4252;
+    --md-code-fg:     #d8dee9;
+    --md-code-border: #434c5e;
+
+    --md-hr-color:      #434c5e;
+    --md-table-border:  #434c5e;
+
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --md-max-width:   68ch;
+    --md-line-height: 1.75;
+
+    --md-error-fg: #bf616a;
+}
+
+.chroma { background: var(--md-code-bg); color: var(--md-code-fg); }
+
+.chroma .err { color: #bf616a; }
+
+.chroma .ln, .chroma .lnt { color: #4c566a; margin-right: 1em; user-select: none; }
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf { color: #616e88; font-style: italic; }
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt { color: #b48ead; font-weight: 600; }
+
+.chroma .o,
+.chroma .ow,
+.chroma .p  { color: #81a1c1; }
+
+.chroma .n  { color: #d8dee9; }
+.chroma .na { color: #88c0d0; }
+.chroma .nb { color: #81a1c1; }
+.chroma .nc { color: #8fbcbb; font-weight: 600; }
+.chroma .nd { color: #88c0d0; }
+.chroma .ne { color: #bf616a; font-weight: 600; }
+.chroma .nf { color: #88c0d0; }
+.chroma .ni { color: #d8dee9; }
+.chroma .nl { color: #d8dee9; }
+.chroma .nn { color: #8fbcbb; }
+.chroma .nt { color: #81a1c1; }
+.chroma .nv { color: #d8dee9; }
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss { color: #a3be8c; }
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il { color: #d08770; }
+
+.chroma .l,
+.chroma .ld { color: #a3be8c; }
+
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: 700; }
+.chroma .gh { color: #e5e9f0; font-weight: 700; }
+.chroma .gi { color: #a3be8c; background: rgba(163, 190, 140, 0.1); display: block; }
+.chroma .gd { color: #bf616a; background: rgba(191, 97, 106, 0.1); display: block; }
+.chroma .gu { color: #88c0d0; font-weight: 700; }
+.chroma .gl { text-decoration: underline; }
+.chroma .gp { color: #4c566a; font-weight: 700; }

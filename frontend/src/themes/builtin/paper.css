@@ -1,0 +1,110 @@
+/* ==========================================================================
+   MDLight — paper.css
+   A warm, light theme. Off-white paper background, warm ink text,
+   teal accents. The only light theme in the set — designed for
+   comfortable daytime reading.
+   ========================================================================== */
+
+:root {
+    --md-bg:             #faf8f5;
+    --md-statusbar-bg:   #f0ece4;
+
+    --md-fg:             #3c3836;
+    --md-heading-color:  #282828;
+
+    --md-link-color:     #45707a;
+    --md-link-hover:     #548c96;
+
+    --md-blockquote-border: #d5c4a1;
+    --md-blockquote-fg:     #7c6f64;
+
+    --md-code-bg:     #f2efe9;
+    --md-code-fg:     #3c3836;
+    --md-code-border: #d5c4a1;
+
+    --md-hr-color:      #d5c4a1;
+    --md-table-border:  #d5c4a1;
+
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --md-max-width:   68ch;
+    --md-line-height: 1.75;
+
+    --md-error-fg: #9d0006;
+}
+
+.chroma { background: var(--md-code-bg); color: var(--md-code-fg); }
+
+.chroma .err { color: #9d0006; }
+
+.chroma .ln, .chroma .lnt { color: #d5c4a1; margin-right: 1em; user-select: none; }
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf { color: #928374; font-style: italic; }
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt { color: #9d0006; font-weight: 600; }
+
+.chroma .o,
+.chroma .ow,
+.chroma .p  { color: #7c6f64; }
+
+.chroma .n  { color: #3c3836; }
+.chroma .na { color: #548c96; }
+.chroma .nb { color: #45707a; }
+.chroma .nc { color: #548c96; font-weight: 600; }
+.chroma .nd { color: #548c96; }
+.chroma .ne { color: #9d0006; font-weight: 600; }
+.chroma .nf { color: #b4710e; }
+.chroma .ni { color: #3c3836; }
+.chroma .nl { color: #3c3836; }
+.chroma .nn { color: #548c96; }
+.chroma .nt { color: #45707a; }
+.chroma .nv { color: #3c3836; }
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss { color: #79740e; }
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il { color: #8f3f71; }
+
+.chroma .l,
+.chroma .ld { color: #79740e; }
+
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: 700; }
+.chroma .gh { color: #282828; font-weight: 700; }
+.chroma .gi { color: #79740e; background: rgba(121, 116, 14, 0.08); display: block; }
+.chroma .gd { color: #9d0006; background: rgba(157, 0, 6, 0.08); display: block; }
+.chroma .gu { color: #548c96; font-weight: 700; }
+.chroma .gl { text-decoration: underline; }
+.chroma .gp { color: #bdae93; font-weight: 700; }

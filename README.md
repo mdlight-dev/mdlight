@@ -26,7 +26,7 @@ mdlight                         # opens file picker
 - **Full CommonMark + GFM**: tables, strikethrough, task lists, autolinks, fenced code blocks
 - **Syntax highlighting**: code blocks styled via chroma with per-theme CSS palettes
 - **YAML front matter**: title, date, tags rendered as a metadata card
-- **Dark theme**: beautiful default-dark theme, swappable at runtime via `--theme`
+- **7 built-in themes**: default-dark, nord, gruvbox, tokyo-night, amber-night, paper, murakami — swappable at runtime via `--theme` or the status-bar picker
 - **File watching**: auto-reloads when the file changes on disk
 - **Zoom**: Ctrl+= / Ctrl+- / Ctrl+0, status bar indicator
 - **Image handling**: local images embedded as data URIs; remote images shown as click-to-load placeholders
@@ -122,7 +122,7 @@ mdlight
 
 ### Themes
 
-Built-in themes: `default-dark`
+Built-in themes: `default-dark`, `nord`, `gruvbox`, `tokyo-night`, `amber-night`, `paper`, `murakami`
 
 User themes: place `.css` files in `~/.config/mdlight/themes/` and reference by name (without `.css` extension).
 

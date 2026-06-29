@@ -1,0 +1,109 @@
+/* ==========================================================================
+   MDLight — tokyo-night.css
+   A port of the Tokyo Night VS Code theme (enkia/tokyo-night-vscode-theme).
+   Deep indigo background, vibrant accents, cyberpunk-tinged readability.
+   ========================================================================== */
+
+:root {
+    --md-bg:             #1a1b26;
+    --md-statusbar-bg:   #16161e;
+
+    --md-fg:             #a9b1d6;
+    --md-heading-color:  #c0caf5;
+
+    --md-link-color:     #7aa2f7;
+    --md-link-hover:     #89ddff;
+
+    --md-blockquote-border: #2f3549;
+    --md-blockquote-fg:     #787c99;
+
+    --md-code-bg:     #1f2335;
+    --md-code-fg:     #a9b1d6;
+    --md-code-border: #2f3549;
+
+    --md-hr-color:      #2f3549;
+    --md-table-border:  #2f3549;
+
+    --md-font-body:    "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
+    --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --md-max-width:   68ch;
+    --md-line-height: 1.75;
+
+    --md-error-fg: #f7768e;
+}
+
+.chroma { background: var(--md-code-bg); color: var(--md-code-fg); }
+
+.chroma .err { color: #f7768e; }
+
+.chroma .ln, .chroma .lnt { color: #3b4261; margin-right: 1em; user-select: none; }
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf { color: #565f89; font-style: italic; }
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt { color: #bb9af7; font-weight: 600; }
+
+.chroma .o,
+.chroma .ow,
+.chroma .p  { color: #89ddff; }
+
+.chroma .n  { color: #a9b1d6; }
+.chroma .na { color: #7aa2f7; }
+.chroma .nb { color: #7aa2f7; }
+.chroma .nc { color: #e0af68; font-weight: 600; }
+.chroma .nd { color: #89ddff; }
+.chroma .ne { color: #f7768e; font-weight: 600; }
+.chroma .nf { color: #7dcfff; }
+.chroma .ni { color: #a9b1d6; }
+.chroma .nl { color: #a9b1d6; }
+.chroma .nn { color: #e0af68; }
+.chroma .nt { color: #bb9af7; }
+.chroma .nv { color: #c0caf5; }
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx,
+.chroma .sr,
+.chroma .s1,
+.chroma .ss { color: #9ece6a; }
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il { color: #ff9e64; }
+
+.chroma .l,
+.chroma .ld { color: #9ece6a; }
+
+.chroma .ge { font-style: italic; }
+.chroma .gs { font-weight: 700; }
+.chroma .gh { color: #c0caf5; font-weight: 700; }
+.chroma .gi { color: #9ece6a; background: rgba(158, 206, 106, 0.1); display: block; }
+.chroma .gd { color: #f7768e; background: rgba(247, 118, 142, 0.1); display: block; }
+.chroma .gu { color: #89ddff; font-weight: 700; }
+.chroma .gl { text-decoration: underline; }
+.chroma .gp { color: #565f89; font-weight: 700; }

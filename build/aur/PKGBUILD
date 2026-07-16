@@ -2,7 +2,7 @@
 # Contributor: Zuhayr Barhoumi <zouheir.barhoumi@gmail.com>
 
 pkgname=mdlight
-pkgver=0.1.0
+pkgver=0.1.8
 pkgrel=1
 pkgdesc="A beautiful, lightweight Markdown reader"
 arch=('x86_64' 'aarch64')
@@ -38,9 +38,10 @@ build() {
   npm run build
   cd ..
 
-  # Build Go binary (stripped, versioned)
+  # Build Go binary (webkit2gtk-4.1, stripped, versioned)
   go build \
     -trimpath \
+    -tags "webkit2_41 desktop production" \
     -ldflags="-s -w -X main.version=${pkgver}" \
     -o "${srcdir}/${pkgname}" .
 }

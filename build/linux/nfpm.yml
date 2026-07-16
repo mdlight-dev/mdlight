@@ -24,12 +24,12 @@ overrides:
   deb:
     depends:
       - libgtk-3-0
-      - libwebkit2gtk-4.0-37
+      - libwebkit2gtk-4.1-0
   rpm:
     depends:
       - libgtk-3
-      - webkit2gtk4.0
+      - webkit2gtk4.1
   apk:
     depends:
       - gtk+3.0
-      - webkit2gtk-4.0
+      - webkit2gtk-4.1

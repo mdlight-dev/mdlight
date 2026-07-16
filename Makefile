@@ -15,7 +15,7 @@ test:
 	go test ./... -count=1 -race
 
 vet:
-	go vet ./...
+	go vet -tags "webkit2_41" ./...
 
 lint:
 	go vet ./...
@@ -25,7 +25,7 @@ lint:
 
 build: frontend sync-themes
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=1 \
-		go build -trimpath -tags "desktop,production" \
+		go build -trimpath -tags "webkit2_41 desktop production" \
 		-ldflags="-s -w -X main.version=$(VERSION)" \
 		-o $(BINARY) .
 	@ls -lh $(BINARY) | awk '{print "  → " $$5}'

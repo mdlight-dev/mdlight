@@ -14,10 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             goos: linux
             goarch: amd64
-            pkg_deps: libgtk-3-dev libwebkit2gtk-4.0-dev
+            pkg_deps: libgtk-3-dev libwebkit2gtk-4.1-dev
           # macOS disabled (Wails SDK linker issue on ARM runners)
           # - os: macos-13
           #   goos: darwin
@@ -64,7 +64,7 @@ jobs:
           npm run build
 
       - name: Build with Wails
-        run: wails build -tags "desktop,production" -ldflags "-s -w -X main.version=${{ github.ref_name }}"
+        run: wails build -tags "webkit2_41 desktop production" -ldflags "-s -w -X main.version=${{ github.ref_name }}"
         env:
           CGO_ENABLED: 1
           GOARCH: ${{ matrix.goarch }}

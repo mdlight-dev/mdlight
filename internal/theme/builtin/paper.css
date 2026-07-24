@@ -29,7 +29,7 @@
     --md-font-heading: "Literata", "Charter", "Bitstream Charter", Georgia, serif;
     --md-font-mono:    "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
-    --md-max-width:   68ch;
+    --md-max-width:   80ch;
     --md-line-height: 1.75;
 
     --md-error-fg: #9d0006;

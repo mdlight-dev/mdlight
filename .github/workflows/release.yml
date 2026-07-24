@@ -125,14 +125,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Upload all release assets
+          files=$(find _artifacts -type f \( -name 'mdlight_*' -o -name '*.deb' -o -name '*.rpm' -o -name '*.apk' -o -name '*.pkg.tar.*' -o -name 'install.sh' \) | tr '\n' ' ')
           gh release create "${{ github.ref_name }}" \
             --title "${{ github.ref_name }}" \
             --notes "See the [commit log](https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}) for details." \
-            _artifacts/**/mdlight_* \
-            _artifacts/**/*.deb \
-            _artifacts/**/*.rpm \
-            _artifacts/**/*.apk \
-            _artifacts/**/*.pkg.tar.* \
-            _artifacts/install-script/install.sh \
+            $files \
             checksums.txt

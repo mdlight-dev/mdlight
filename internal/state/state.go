@@ -19,13 +19,19 @@ import (
 )
 
 const (
-	recentFilesMax = 10
+	recentFilesMax  = 10
 	recentFilesName = "recent-files.json"
+	prefsName       = "preferences.json"
 )
 
 // recentFiles holds the persisted list of recently opened file paths.
 type recentFiles struct {
 	Paths []string `json:"paths"`
+}
+
+// preferences holds per-user settings persisted between sessions.
+type preferences struct {
+	Theme string `json:"theme"`
 }
 
 // dataDir returns the XDG data directory for MDLight.
@@ -136,4 +142,51 @@ func saveRecent(paths []string) error {
 	}
 
 	return os.WriteFile(filepath.Join(dir, recentFilesName), data, 0644)
+}
+
+// ── Theme persistence ────────────────────────────────────────────────────────
+
+// SaveTheme persists the active theme name to disk so it survives restarts.
+func SaveTheme(name string) error {
+	prefs := loadPrefs()
+	prefs.Theme = name
+	return savePrefs(prefs)
+}
+
+// LoadTheme returns the persisted theme name, or empty string if none set.
+func LoadTheme() string {
+	return loadPrefs().Theme
+}
+
+func loadPrefs() preferences {
+	dir, err := dataDir()
+	if err != nil {
+		return preferences{}
+	}
+
+	data, err := os.ReadFile(filepath.Join(dir, prefsName))
+	if err != nil {
+		return preferences{}
+	}
+
+	var prefs preferences
+	if err := json.Unmarshal(data, &prefs); err != nil {
+		return preferences{}
+	}
+
+	return prefs
+}
+
+func savePrefs(prefs preferences) error {
+	dir, err := dataDir()
+	if err != nil {
+		return err
+	}
+
+	data, err := json.Marshal(prefs)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(filepath.Join(dir, prefsName), data, 0644)
 }

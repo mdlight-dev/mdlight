@@ -82,8 +82,14 @@ type ThemeInfo = theme.Info
 // always available by the time onMount runs.
 func (a *App) GetStartupFile() string { return a.startupFile }
 
-// GetStartupTheme returns the --theme flag value parsed from os.Args.
-func (a *App) GetStartupTheme() string { return a.startupTheme }
+// GetStartupTheme returns the theme to use on startup.
+// Precedence: --theme CLI flag > persisted preference > empty (frontend uses default-dark).
+func (a *App) GetStartupTheme() string {
+	if a.startupTheme != "" {
+		return a.startupTheme
+	}
+	return state.LoadTheme()
+}
 
 // ── File operations ──────────────────────────────────────────────────────────
 
@@ -215,6 +221,12 @@ func (a *App) ResolveTheme(name string) (string, error) {
 // ListThemes returns all available themes: built-ins first, then user themes.
 func (a *App) ListThemes() ([]ThemeInfo, error) {
 	return theme.List()
+}
+
+// SaveThemePreference persists the active theme name to the XDG data directory
+// so it survives restarts. Called by the frontend after every theme-picker change.
+func (a *App) SaveThemePreference(name string) error {
+	return state.SaveTheme(name)
 }
 
 // ── Recent files ────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy, tick } from 'svelte';
   import { EventsOn, OnFileDrop } from '../wailsjs/runtime/runtime';
-  import {
+import {
     OpenFile,
     GetStartupFile,
     GetStartupTheme,
@@ -9,7 +9,8 @@
     ResolveTheme,
     ListThemes,
     LoadRemoteImage,
-  } from '../wailsjs/go/main/App';
+    SaveThemePreference,
+} from '../wailsjs/go/main/App';
 
   // ?raw tells Vite to import the file content as a plain string — bundled
   // into the JS output at build time, no runtime fetch, nothing can 404.
@@ -52,6 +53,7 @@
       applyChroma(css);
       activeTheme = name;
       themeError = '';
+      SaveThemePreference(name);
     } catch (e) {
       themeError = String(e);
     }

@@ -15,6 +15,8 @@ export function LoadRemoteImage(arg1:string):Promise<string>;
 
 export function OpenFile(arg1:string):Promise<render.DocumentPayload>;
 
+export function SaveThemePreference(arg1:string):Promise<void>;
+
 export function PickFile():Promise<string>;
 
 export function ResolveTheme(arg1:string):Promise<string>;

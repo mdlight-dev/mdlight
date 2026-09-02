@@ -618,6 +618,3 @@ body {
 }
 ::highlight(md-find) { background: var(--md-find-bg, #f9e2af); color: var(--md-find-fg, var(--md-fg)); }
 ::highlight(md-find-active) { background: var(--md-find-current-bg, var(--md-link-color)); color: var(--md-find-current-fg, var(--md-bg)); }
-
-
-}

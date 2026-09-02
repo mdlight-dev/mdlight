@@ -58,6 +58,7 @@ jobs:
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
       - name: Check CSS brace balance
+        shell: bash
         run: |
           opens=$(tr -cd '{' < frontend/src/style.css | wc -c)
           closes=$(tr -cd '}' < frontend/src/style.css | wc -c)

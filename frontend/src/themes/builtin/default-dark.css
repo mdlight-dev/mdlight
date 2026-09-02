@@ -79,10 +79,16 @@
     --md-max-width:   80ch;
     --md-line-height: 1.75;
 
-    /* ------------------------------------------------------------------
-       Error color — used by the .error state in style.css
-    ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------
+   Error color — used by the .error state in style.css
+*/
     --md-error-fg: #e08a8a;
+
+/* Find-in-document highlight colors */
+    --md-find-bg:           rgba(122,162,212,0.30);   /* other matches, muted link color */
+    --md-find-fg:           var(--md-fg);
+    --md-find-current-bg:   var(--md-link-color);     /* current match, link color */
+    --md-find-current-fg:   var(--md-bg);
 }
 
 /* ==========================================================================

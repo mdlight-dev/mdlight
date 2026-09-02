@@ -33,6 +33,12 @@
     --md-line-height: 1.75;
 
     --md-error-fg: #a85c5c;
+
+/* Find-in-document highlight colors */
+    --md-find-bg:           rgba(184,92,92,0.30);     /* other matches, faded crimson */
+    --md-find-fg:           var(--md-fg);
+    --md-find-current-bg:   #b85c5c;                  /* current match, link color */
+    --md-find-current-fg:   #121418;
 }
 
 .chroma { background: var(--md-code-bg); color: var(--md-code-fg); }

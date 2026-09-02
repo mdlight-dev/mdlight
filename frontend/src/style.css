@@ -561,13 +561,63 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Reduced motion
+   Find-in-document bar
+   Fixed to the top, appears on Ctrl+F. Styled with theme variables.
    -------------------------------------------------------------------------- */
 
-@media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
-    }
+.find-bar {
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 2.5rem;
+  background: var(--md-bg);
+  border-bottom: 1px solid var(--md-hr-color);
+  font-family: var(--md-font-mono); font-size: 0.78rem;
+  flex-wrap: wrap;
+}
+.find-bar input {
+  flex: 0 1 300px; min-width: 120px;
+  font-family: var(--md-font-mono); font-size: 0.78rem;
+  padding: 0.25em 0.5em; border-radius: 3px;
+  background: var(--md-code-bg); color: var(--md-fg);
+  border: 1px solid var(--md-code-border);
+}
+.find-bar input:focus { outline: none; border-color: var(--md-link-color); }
+.find-bar input.no-match { border-color: var(--md-error-fg); }
+.find-bar input::placeholder { color: var(--md-blockquote-fg); white-space: nowrap; }
+.find-count { color: var(--md-blockquote-fg); white-space: nowrap; }
+.find-bar button {
+  background: transparent; color: var(--md-blockquote-fg);
+  border: 1px solid var(--md-hr-color); border-radius: 3px;
+  cursor: pointer; padding: 0.15em 0.5em;
+  font-family: var(--md-font-mono); font-size: 0.72rem;
+}
+.find-bar button:hover { color: var(--md-link-color); border-color: var(--md-link-color); }
+.find-bar button.active { background: var(--md-link-color); color: var(--md-bg); border-color: var(--md-link-color); }
+.find-bar button.find-prev,
+.find-bar button.find-next { width: 2rem; height: 2rem; padding: 0; }
+.find-bar button.find-close { flex: 0; }
+
+/* --------------------------------------------------------------------------
+   Mark highlighting for find
+   Styled via CSS custom properties so themes control the colors.
+   .md-find   = other matches
+   .md-find-active = current match
+   ::highlight(md-find) / ::highlight(md-find-active) for browsers supporting CSS Highlight API
+   -------------------------------------------------------------------------- */
+
+.md-find {
+  background: var(--md-find-bg, #f9e2af);
+  color: var(--md-find-fg, var(--md-fg));
+  border-radius: 2px;
+  padding: 0 0.05em;
+}
+.md-find-active {
+  background: var(--md-find-current-bg, var(--md-link-color));
+  color: var(--md-find-current-fg, var(--md-bg));
+  outline: 1px solid var(--md-link-color);
+}
+::highlight(md-find) { background: var(--md-find-bg, #f9e2af); color: var(--md-find-fg, var(--md-fg)); }
+::highlight(md-find-active) { background: var(--md-find-current-bg, var(--md-link-color)); color: var(--md-find-current-fg, var(--md-bg)); }
 
 
 }

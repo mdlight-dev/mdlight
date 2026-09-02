@@ -38,6 +38,16 @@ import {
   // Set on every successful loadFile(); read by the file:changed handler.
   let currentPath = '';
 
+  // ── Find-in-document state ──────────────────────────────────────────────────
+  let findOpen          = false;
+  let findQuery         = '';
+  let findMatches       = [];
+  let findActiveIdx     = -1;
+  let findCaseSensitive = false;
+  let findWholeWord     = false;
+  let findInputEl;
+  let findMarkEls       = [];
+
   // ── Theme picker state ──────────────────────────────────────────────────────
   let availableThemes = [];  // populated from ListThemes() on startup
   let activeTheme    = '';   // name of the currently applied theme
@@ -105,7 +115,148 @@ import {
     applyZoom();
   }
 
-  // ── Theme injection ─────────────────────────────────────────────────────────
+  // ── Find-in-document helper functions ─────────────────────────────────────
+
+  function escapeRegExp(str) {
+    return str.replace(/[.+*?^${}()|[\]\\]/g, '\\\\$&');
+  }
+
+  function buildFindRegex() {
+    if (!findQuery || !findQuery.trim()) return null;
+    const escaped = escapeRegExp(findQuery.trim());
+    const flags = findCaseSensitive ? 'g' : 'gi';
+    const wholeWord = findWholeWord ? '\\b' : '';
+    return new RegExp(wholeWord + escaped + wholeWord, flags);
+  }
+
+  function clearFindHighlights() {
+    // Unwrap all <mark class="md-find">
+    const marks = document.querySelectorAll('.md-find');
+    marks.forEach(mark => {
+      mark.parentNode.replaceChild(document.createTextNode(mark.textContent), mark);
+    });
+    findMatches = [];
+    findActiveIdx = -1;
+    findMarkEls = [];
+    if (findInputEl) findInputEl.classList.remove('no-match');
+  }
+
+  function collectRanges() {
+    const regex = buildFindRegex();
+    if (!regex) return [];
+    const ranges = [];
+    const body = document.querySelector('.md-body');
+    if (!body) return [];
+
+    const walker = document.createTreeWalker(
+      body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function(node) {
+          if (node.parentNode.tagName) {
+            const tag = node.parentNode.tagName.toUpperCase();
+            if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+
+    let textNode;
+    while ((textNode = walker.nextNode())) {
+      const match = regex.exec(textNode.textContent);
+      if (match) {
+        const range = new Range();
+        range.setStart(textNode, match.index);
+        range.collapse(true);
+        range.endContainer = textNode;
+        range.endOffset = match.index + match[0].length;
+        ranges.push(range);
+      }
+    }
+    return ranges;
+  }
+
+  function applyFindHighlights() {
+    clearFindHighlights();
+    const ranges = collectRanges();
+    if (!ranges.length) {
+      if (findInputEl) findInputEl.classList.add('no-match');
+      findMatches = [];
+      findActiveIdx = -1;
+      return;
+    }
+
+    findMatches = ranges;
+    findActiveIdx = 0;
+
+    // Wrap each range in a <mark> element using Range.surroundContents
+    // This works on the live DOM, not Svelte's template, so marks persist
+    // until the next html assignment in loadFile.
+    const existing = document.querySelectorAll('.md-find');
+    existing.forEach(m => m.parentNode.removeChild(m));
+    findMarkEls = [];
+
+    for (let i = 0; i < ranges.length; i++) {
+      const range = ranges[i];
+      const isActive = (i === findActiveIdx);
+      const mark = document.createElement('span');
+      mark.className = isActive ? 'md-find md-find-active' : 'md-find';
+      mark.setAttribute('role', 'option');
+      mark.setAttribute('aria-selected', isActive);
+      findMarkEls.push(mark);
+      try {
+        range.surroundContents(mark);
+      } catch (e) {
+        // surroundContents failed; skip this range
+        findMarkEls.pop();
+      }
+    }
+
+    // Remove no-match class if we have matches
+    if (findInputEl) findInputEl.classList.remove('no-match');
+  }
+
+  function scrollToActive() {
+    if (findMatches.length === 0 || findActiveIdx < 0 || findActiveIdx >= findMatches.length) return;
+    const el = findMatches[findActiveIdx].commonAncestorContainer;
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function goToMatch(delta) {
+    if (findMatches.length === 0) return;
+    findActiveIdx = (findActiveIdx + delta + findMatches.length) % findMatches.length;
+    // Re-apply active class on marks
+    findMarkEls.forEach((mark, i) => {
+      mark.classList.toggle('md-find-active', i === findActiveIdx);
+      mark.classList.toggle('md-find', i !== findActiveIdx);
+    });
+    scrollToActive();
+  }
+
+  function openFind() {
+    findOpen = true;
+    // If there's already a query from a previous session/file, keep it;
+    // otherwise the re-apply hook in loadFile finally will handle highlighting.
+    findInputEl.focus();
+    findInputEl.select();
+  }
+
+  function closeFind() {
+    findOpen = false;
+    findQuery = '';
+    clearFindHighlights();
+    if (findInputEl) findInputEl.blur();
+  }
+
+  function onFindInput() {
+    clearTimeout(findTimeout);
+    findTimeout = setTimeout(() => {
+      applyFindHighlights();
+    }, 150);
+  }
+
+  let findTimeout;
 
   // applyTheme injects CSS text into <style id="mdlight-theme"> in <head>.
   // Called on startup and on every theme switch (milestone 4+).
@@ -250,6 +401,14 @@ import {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
+      // Ctrl+F / Cmd+F: open find bar (suppress native browser find)
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'f' || e.key === 'F') {
+          e.preventDefault();
+          openFind();
+          return;
+        }
+      }
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
           case '=':
@@ -276,6 +435,28 @@ import {
 
     // ── 7. Theme picker: close on outside click ──────────────────────────
     document.addEventListener('click', handleClickOutside);
+
+    // ── 8. Find-in-document keyboard shortcuts ─────────────────────────────
+    findInputEl.addEventListener('keydown', function(e) {
+      // Escape: close find
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeFind();
+        return;
+      }
+      // Enter: next match
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        goToMatch(1);
+        return;
+      }
+      // Shift+Enter: previous match
+      if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault();
+        goToMatch(-1);
+        return;
+      }
+    });
   });
 
   function handlePlaceholderClick(e) {
@@ -347,6 +528,24 @@ import {
           {#each frontMatter.Tags as tag}<span class="fm-tag">{tag}</span>{/each}
         </div>
       {/if}
+    </div>
+  {/if}
+
+  {#if findOpen}
+    <div class="find-bar" role="search">
+      <input
+        bind:this={findInputEl}
+        bind:value={findQuery}
+        on:input={onFindInput}
+        placeholder="Find in document"
+        aria-label="Find in document"
+      />
+      {#if findMatches.length}
+        <span class="find-count">{findActiveIdx + 1} / {findMatches.length}</span>
+      {/if}
+      <button class="find-prev" on:click={() => goToMatch(-1)} title="Previous (Shift+Enter)">↑</button>
+      <button class="find-next" on:click={() => goToMatch(1)} title="Next (Enter)">↓</button>
+      <button class="find-close" on:click={closeFind} title="Close (Esc)">×</button>
     </div>
   {/if}
 

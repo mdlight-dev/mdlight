@@ -164,8 +164,11 @@ import {
 
     let textNode;
     while ((textNode = walker.nextNode())) {
-      const match = regex.exec(textNode.textContent);
-      if (match) {
+      const text = textNode.textContent;
+      let match;
+      // Use a non-global regex per text node to avoid lastIndex issues
+      const nodeRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
+      while ((match = nodeRegex.exec(text)) !== null) {
         const range = new Range();
         range.setStart(textNode, match.index);
         range.collapse(true);
@@ -544,9 +547,15 @@ import {
       {#if findMatches.length}
         <span class="find-count">{findActiveIdx + 1} / {findMatches.length}</span>
       {/if}
-      <button class="find-prev" on:click={() => goToMatch(-1)} title="Previous (Shift+Enter)">↑</button>
-      <button class="find-next" on:click={() => goToMatch(1)} title="Next (Enter)">↓</button>
-      <button class="find-close" on:click={closeFind} title="Close (Esc)">×</button>
+      <button class="find-prev" on:click={() => goToMatch(-1)} title="Previous (Shift+Enter)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+      </button>
+      <button class="find-next" on:click={() => goToMatch(1)} title="Next (Enter)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <button class="find-close" on:click={closeFind} title="Close (Esc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     </div>
   {/if}
 

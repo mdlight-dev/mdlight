@@ -46,7 +46,7 @@ import {
   let findCaseSensitive = false;
   let findWholeWord     = false;
   let findInputEl;
-  let findMarkEls       = [];
+  let findMarks       = [];
 
   // ── Theme picker state ──────────────────────────────────────────────────────
   let availableThemes = [];  // populated from ListThemes() on startup
@@ -137,7 +137,7 @@ import {
     });
     findMatches = [];
     findActiveIdx = -1;
-    findMarkEls = [];
+    findMarks = [];
     if (findInputEl) findInputEl.classList.remove('no-match');
   }
 
@@ -190,12 +190,13 @@ import {
     findMatches = ranges;
     findActiveIdx = 0;
 
-    // Wrap each range in a <mark> element using Range.surroundContents
-    // This works on the live DOM, not Svelte's template, so marks persist
-    // until the next html assignment in loadFile.
+    // Wrap each range in a <mark> element using Range.surroundContents.
+    // findMarks holds the live <span> elements so scrollToActive can use them
+    // directly (Range.commonAncestorContainer is the original text node, not
+    // the mark, after surroundContents).
     const existing = document.querySelectorAll('.md-find');
     existing.forEach(m => m.parentNode.removeChild(m));
-    findMarkEls = [];
+    findMarks = [];
 
     for (let i = 0; i < ranges.length; i++) {
       const range = ranges[i];
@@ -204,12 +205,11 @@ import {
       mark.className = isActive ? 'md-find md-find-active' : 'md-find';
       mark.setAttribute('role', 'option');
       mark.setAttribute('aria-selected', isActive);
-      findMarkEls.push(mark);
       try {
         range.surroundContents(mark);
+        findMarks.push(mark);
       } catch (e) {
         // surroundContents failed; skip this range
-        findMarkEls.pop();
       }
     }
 
@@ -218,16 +218,17 @@ import {
   }
 
   function scrollToActive() {
-    if (findMatches.length === 0 || findActiveIdx < 0 || findActiveIdx >= findMatches.length) return;
-    const el = findMatches[findActiveIdx].commonAncestorContainer;
+    if (findMarks.length === 0 || findActiveIdx < 0 || findActiveIdx >= findMarks.length) return;
+    let el = findMarks[findActiveIdx];
+    // text nodes don't have scrollIntoView — walk up to the nearest element
+    if (el && el.nodeType === Node.TEXT_NODE) el = el.parentElement;
     if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
   function goToMatch(delta) {
-    if (findMatches.length === 0) return;
-    findActiveIdx = (findActiveIdx + delta + findMatches.length) % findMatches.length;
-    // Re-apply active class on marks
-    findMarkEls.forEach((mark, i) => {
+    if (findMarks.length === 0) return;
+    findActiveIdx = (findActiveIdx + delta + findMarks.length) % findMarks.length;
+    findMarks.forEach((mark, i) => {
       mark.classList.toggle('md-find-active', i === findActiveIdx);
       mark.classList.toggle('md-find', i !== findActiveIdx);
     });
@@ -253,6 +254,7 @@ import {
     clearTimeout(findTimeout);
     findTimeout = setTimeout(() => {
       applyFindHighlights();
+      scrollToActive();
     }, 150);
   }
 
@@ -438,22 +440,21 @@ import {
 
     // ── 8. Find-in-document keyboard shortcuts ─────────────────────────────
     findInputEl.addEventListener('keydown', function(e) {
-      // Escape: close find
       if (e.key === 'Escape') {
         e.preventDefault();
         closeFind();
+        return;
+      }
+      // Shift+Enter: previous match (must check BEFORE plain Enter)
+      if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault();
+        goToMatch(-1);
         return;
       }
       // Enter: next match
       if (e.key === 'Enter') {
         e.preventDefault();
         goToMatch(1);
-        return;
-      }
-      // Shift+Enter: previous match
-      if (e.key === 'Enter' && e.shiftKey) {
-        e.preventDefault();
-        goToMatch(-1);
         return;
       }
     });

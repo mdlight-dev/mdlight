@@ -588,16 +588,15 @@ body {
 .find-bar button {
   background: transparent; color: var(--md-blockquote-fg);
   border: 1px solid var(--md-hr-color); border-radius: 3px;
-  cursor: pointer; padding: 0.15em 0.5em;
+  cursor: pointer; padding: 0;
   font-family: var(--md-font-mono); font-size: 0.72rem;
-  width: 2rem; height: 2rem; display: inline-flex;
-  align-items: center; justify-content: center;
+  width: 2rem; height: 2rem; min-width: 2rem; min-height: 2rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  line-height: 1;
 }
 .find-bar button:hover { color: var(--md-link-color); border-color: var(--md-link-color); }
 .find-bar button.active { background: var(--md-link-color); color: var(--md-bg); border-color: var(--md-link-color); }
-.find-bar button.find-prev,
-.find-bar button.find-next { padding: 0; }
-.find-bar button.find-close { flex: 0; }
+.find-bar button svg { display: block; width: 14px; height: 14px; }
 
 /* --------------------------------------------------------------------------
    Mark highlighting for find

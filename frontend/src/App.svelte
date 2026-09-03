@@ -118,7 +118,7 @@ import {
   // ── Find-in-document helper functions ─────────────────────────────────────
 
   function escapeRegExp(str) {
-    return str.replace(/[.+*?^${}()|[\]\\]/g, '\\\\$&');
+    return str.replace(/[.+*?^${}()|[\]\\]/g, '\\$&');
   }
 
   function buildFindRegex() {
@@ -130,11 +130,15 @@ import {
   }
 
   function clearFindHighlights() {
-    // Unwrap all <mark class="md-find">
-    const marks = document.querySelectorAll('.md-find');
+    const marks = document.querySelectorAll('.md-find, .md-find-active');
+    const parents = new Set();
     marks.forEach(mark => {
+      if (!mark.parentNode) return;
+      parents.add(mark.parentNode);
       mark.parentNode.replaceChild(document.createTextNode(mark.textContent), mark);
     });
+    // Merge adjacent text nodes split by unwrapping
+    parents.forEach(p => p.normalize());
     findMatches = [];
     findActiveIdx = -1;
     findMarks = [];
@@ -153,10 +157,12 @@ import {
       NodeFilter.SHOW_TEXT,
       {
         acceptNode: function(node) {
-          if (node.parentNode.tagName) {
-            const tag = node.parentNode.tagName.toUpperCase();
-            if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
-          }
+          // skip text inside script/style/code highlight wrappers already marked
+          const parent = node.parentNode;
+          if (!parent || !parent.tagName) return NodeFilter.FILTER_REJECT;
+          const tag = parent.tagName.toUpperCase();
+          if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+          if (parent.classList && parent.classList.contains('md-find')) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
         }
       }
@@ -165,16 +171,20 @@ import {
     let textNode;
     while ((textNode = walker.nextNode())) {
       const text = textNode.textContent;
+      if (!text) continue;
+      // Fresh regex per text node so lastIndex starts at 0 and does not bleed across nodes.
+      // Keep the 'g' flag so exec advances through multiple matches in the same node.
+      const nodeRegex = new RegExp(regex.source, regex.flags);
       let match;
-      // Use a non-global regex per text node to avoid lastIndex issues
-      const nodeRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
       while ((match = nodeRegex.exec(text)) !== null) {
+        // Guard against zero-length matches (e.g. empty query) which would loop forever
+        if (match[0].length === 0) break;
         const range = new Range();
         range.setStart(textNode, match.index);
-        range.collapse(true);
-        range.endContainer = textNode;
-        range.endOffset = match.index + match[0].length;
+        range.setEnd(textNode, match.index + match[0].length);
         ranges.push(range);
+        // Avoid infinite loop on zero-length: exec already advanced, but ensure progress
+        if (nodeRegex.lastIndex === match.index) nodeRegex.lastIndex++;
       }
     }
     return ranges;
@@ -238,19 +248,19 @@ import {
     scrollToActive();
   }
 
-  function openFind() {
+  async function openFind() {
     findOpen = true;
-    // If there's already a query from a previous session/file, keep it;
-    // otherwise the re-apply hook in loadFile finally will handle highlighting.
-    findInputEl.focus();
-    findInputEl.select();
+    await tick();
+    if (findInputEl) {
+      findInputEl.focus();
+      findInputEl.select();
+    }
   }
 
   function closeFind() {
     findOpen = false;
     findQuery = '';
     clearFindHighlights();
-    if (findInputEl) findInputEl.blur();
   }
 
   function onFindInput() {
@@ -261,7 +271,69 @@ import {
     }, 150);
   }
 
+  function handleFindKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeFind();
+      return;
+    }
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      goToMatch(-1);
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // If highlights haven't been applied yet (typing + immediate Enter
+      // within debounce window), apply synchronously first.
+      if (findMarks.length === 0 && findQuery.trim()) {
+        clearTimeout(findTimeout);
+        applyFindHighlights();
+        scrollToActive();
+      } else {
+        goToMatch(1);
+      }
+      return;
+    }
+  }
+
   let findTimeout;
+
+  function handleKeydown(e) {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      // Allow Ctrl+F even inside input so user can re-focus find
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        // fall through to open-find handling below
+      } else {
+        return;
+      }
+    }
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        openFind();
+        return;
+      }
+    }
+    // Ctrl/Cmd zoom shortcuts (only when not typing)
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case '=':
+        case '+':
+          e.preventDefault();
+          zoomIn();
+          break;
+        case '-':
+          e.preventDefault();
+          zoomOut();
+          break;
+        case '0':
+          e.preventDefault();
+          zoomReset();
+          break;
+      }
+    }
+  }
 
   // applyTheme injects CSS text into <style id="mdlight-theme"> in <head>.
   // Called on startup and on every theme switch (milestone 4+).
@@ -400,38 +472,6 @@ import {
       loadFile(currentPath);
     });
 
-    // ── 5. Keyboard shortcuts (zoom) ────────────────────────────────────────
-    function handleKeydown(e) {
-      // Only handle zoom shortcuts when not typing in an input/textarea
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      // Ctrl+F / Cmd+F: open find bar (suppress native browser find)
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'f' || e.key === 'F') {
-          e.preventDefault();
-          openFind();
-          return;
-        }
-      }
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case '=':
-          case '+':
-            e.preventDefault();
-            zoomIn();
-            break;
-          case '-':
-            e.preventDefault();
-            zoomOut();
-            break;
-          case '0':
-            e.preventDefault();
-            zoomReset();
-            break;
-        }
-      }
-    }
     window.addEventListener('keydown', handleKeydown);
 
     // ── 6. Remote image click-to-load ─────────────────────────────────────
@@ -441,26 +481,7 @@ import {
     // ── 7. Theme picker: close on outside click ──────────────────────────
     document.addEventListener('click', handleClickOutside);
 
-    // ── 8. Find-in-document keyboard shortcuts ─────────────────────────────
-    findInputEl.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        closeFind();
-        return;
-      }
-      // Shift+Enter: previous match (must check BEFORE plain Enter)
-      if (e.key === 'Enter' && e.shiftKey) {
-        e.preventDefault();
-        goToMatch(-1);
-        return;
-      }
-      // Enter: next match
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        goToMatch(1);
-        return;
-      }
-    });
+    // find input shortcuts are now handled declaratively via on:keydown={handleFindKeydown} in template
   });
 
   function handlePlaceholderClick(e) {
@@ -541,11 +562,12 @@ import {
         bind:this={findInputEl}
         bind:value={findQuery}
         on:input={onFindInput}
+        on:keydown={handleFindKeydown}
         placeholder="Find in document"
         aria-label="Find in document"
       />
-      {#if findMatches.length}
-        <span class="find-count">{findActiveIdx + 1} / {findMatches.length}</span>
+      {#if findMarks.length}
+        <span class="find-count">{findActiveIdx + 1} / {findMarks.length}</span>
       {/if}
       <button class="find-prev" on:click={() => goToMatch(-1)} title="Previous (Shift+Enter)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>

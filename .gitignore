@@ -2,4 +2,5 @@ build/bin
 node_modules
 frontend/dist
 README_local.md
-docs/
+docs/*
+!docs/tag-policy.md

@@ -537,7 +537,15 @@ import {
   <div class="loading">Loading…</div>
 
 {:else if fileError}
-  <div class="error">{fileError}</div>
+  {#if fileError.includes('is a directory')}
+    <div class="loading">
+      <p>{fileError}</p>
+      <button class="theme-picker-btn" on:click={async () => { const p = await PickFile(); if (p) await loadFile(p); }} style="margin-top: 1rem;">Browse files…</button>
+      <p style="margin-top: 0.75rem; font-size: 0.85rem; opacity: 0.7;">Or drop a Markdown file here or run <code>mdlight file.md</code>.</p>
+    </div>
+  {:else}
+    <div class="error">{fileError}</div>
+  {/if}
 
 {:else if !fileOpened}
   <!-- Idle / welcome state: picker was cancelled or no file given. -->

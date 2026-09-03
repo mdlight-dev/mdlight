@@ -99,6 +99,13 @@ func (a *App) GetStartupTheme() string {
 // Error handling: only filesystem failures (file not found, permission denied)
 // produce an error. Rendering failures degrade gracefully inside render.Render.
 func (a *App) OpenFile(path string) (DocumentPayload, error) {
+	// Option A minimal for `mdlight .` — detect directory before ReadFile so
+	// we can return a friendly sentinel the frontend can render without red
+	// "is a directory" raw syscall text. Keep single-file model (proposal.md:43).
+	info, err := os.Stat(path)
+	if err == nil && info.IsDir() {
+		return DocumentPayload{}, fmt.Errorf("'%s' is a directory — please select a Markdown file", path)
+	}
 	src, err := os.ReadFile(path)
 	if err != nil {
 		return DocumentPayload{}, err

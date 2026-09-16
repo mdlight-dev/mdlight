@@ -53,6 +53,21 @@ import {
   let activeTheme    = '';   // name of the currently applied theme
   let themePickerOpen = false;
 
+  // ── Sidebar + outline state (v0.2.0) ─────────────────────────────────────────
+  //
+  // tocEntries is derived from the rendered .md-body headings (which carry
+  // id="" via goldmark's parser.WithAutoHeadingID). Rebuilt only when html
+  // changes in loadFile() — never on find keystrokes, which split text nodes
+  // with highlight spans and would otherwise thrash scroll-spy state.
+  let sidebarOpen    = true;
+  let tocEntries     = [];   // [{id, text, level}]
+  let activeHeadingId = '';
+  let tocObserver    = null; // IntersectionObserver for scroll-spy
+
+  // currentFileName is display-only (basename of currentPath, both separators
+  // so Windows backslash paths render correctly). Shown in the top bar.
+  $: currentFileName = currentPath ? currentPath.split(/[/\\]/).pop() : '';
+
   // switchTheme fetches and applies a theme by name. Called by the dropdown
   // picker in the status bar and usable from the --theme CLI flag path.
   async function switchTheme(name) {
@@ -113,6 +128,57 @@ import {
   function zoomReset() {
     zoomLevel = 100;
     applyZoom();
+  }
+
+  // ── Outline (TOC) helpers ───────────────────────────────────────────────────
+
+  function toggleSidebar() {
+    sidebarOpen = !sidebarOpen;
+  }
+
+  // buildToc scans the rendered article for headings and (re)arms the
+  // scroll-spy observer. Called once per loadFile() after tick(), so the
+  // {@html html} block is in the DOM. Headings without id are skipped —
+  // with WithAutoHeadingID they should not occur, but find-highlight
+  // unwrapping must never crash the outline.
+  function buildToc() {
+    if (tocObserver) {
+      tocObserver.disconnect();
+      tocObserver = null;
+    }
+    tocEntries = [];
+    activeHeadingId = '';
+    const body = document.querySelector('.md-body');
+    if (!body) return;
+    const heads = body.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const entries = [];
+    heads.forEach(h => {
+      if (!h.id) return;
+      entries.push({ id: h.id, text: (h.textContent || '').trim(), level: Number(h.tagName[1]) || 1 });
+    });
+    tocEntries = entries;
+    if (!entries.length || typeof IntersectionObserver === 'undefined') return;
+    const obs = new IntersectionObserver((ioEntries) => {
+      ioEntries.forEach(en => {
+        if (en.isIntersecting) activeHeadingId = en.target.id;
+      });
+    }, { rootMargin: '-10% 0px -75% 0px' });
+    heads.forEach(h => { if (h.id) obs.observe(h); });
+    tocObserver = obs;
+  }
+
+  // tocJump scrolls to a heading. scroll-margin-top in style.css keeps the
+  // sticky find bar / top bar from covering the target. Note: zoom uses
+  // transform: scale() on .md-body, so offsets are approximate at extreme
+  // zoom levels — navigation still works, pixel-exactness isn't guaranteed.
+  function tocJump(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function openSidebarFile() {
+    const p = await PickFile();
+    if (p) await loadFile(p);
   }
 
   // ── Find-in-document helper functions ─────────────────────────────────────
@@ -301,9 +367,10 @@ import {
 
   function handleKeydown(e) {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-      // Allow Ctrl+F even inside input so user can re-focus find
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
-        // fall through to open-find handling below
+      // Allow Ctrl+F (find) and Ctrl+B (sidebar) even inside inputs so the
+      // user can re-focus find or toggle chrome while typing there.
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F' || e.key === 'b' || e.key === 'B')) {
+        // fall through to shortcut handling below
       } else {
         return;
       }
@@ -312,6 +379,11 @@ import {
       if (e.key === 'f' || e.key === 'F') {
         e.preventDefault();
         openFind();
+        return;
+      }
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault();
+        toggleSidebar();
         return;
       }
     }
@@ -387,6 +459,7 @@ import {
       loading = false;
       await tick();
       applyZoom();
+      buildToc();
     }
   }
 
@@ -530,6 +603,10 @@ import {
     document.removeEventListener('click', handlePlaceholderClick);
     document.removeEventListener('keydown', handlePlaceholderKeydown);
     document.removeEventListener('click', handleClickOutside);
+    if (tocObserver) {
+      tocObserver.disconnect();
+      tocObserver = null;
+    }
   });
 </script>
 
@@ -552,6 +629,49 @@ import {
   <div class="loading">No file open. Drop a Markdown file here or run <code>mdlight file.md</code>.</div>
 
 {:else}
+  <div class="app-shell">
+    {#if sidebarOpen}
+      <aside class="sidebar" aria-label="Sidebar">
+        <div class="sidebar-section">
+          <button class="sidebar-open-btn" on:click={openSidebarFile}>Open File</button>
+        </div>
+
+        <!-- File list (recent files via GetRecentFiles) plugs in here — deferred past v0.2.0 -->
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Outline</div>
+          {#if tocEntries.length}
+            <nav class="outline" aria-label="Document outline">
+              {#each tocEntries as e}
+                <button
+                  class="outline-item"
+                  class:active={e.id === activeHeadingId}
+                  style="--toc-level: {e.level}"
+                  on:click={() => tocJump(e.id)}
+                  title={e.text}
+                >{e.text}</button>
+              {/each}
+            </nav>
+          {:else}
+            <div class="outline-empty">No headings</div>
+          {/if}
+        </div>
+
+        <div class="sidebar-section sidebar-settings">
+          <div class="sidebar-section-title">Settings</div>
+          <div class="outline-empty" title="Settings land with a later release">Coming soon</div>
+        </div>
+      </aside>
+    {/if}
+
+    <div class="main-col">
+      <div class="topbar">
+        <button class="topbar-toggle" on:click={toggleSidebar} title="Toggle sidebar (Ctrl+B)" aria-label="Toggle sidebar" aria-expanded={sidebarOpen}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+        </button>
+        <span class="topbar-file">{currentFileName}</span>
+      </div>
+
   {#if frontMatter.Title}
     <div class="frontmatter-card">
       <h1 class="fm-title">{frontMatter.Title}</h1>
@@ -636,6 +756,8 @@ import {
       </span>
     {/if}
   </footer>
+    </div>
+  </div>
 {/if}
 
 <style>

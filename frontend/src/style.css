@@ -619,3 +619,216 @@ body {
 }
 ::highlight(md-find) { background: var(--md-find-bg, #f9e2af); color: var(--md-find-fg, var(--md-fg)); }
 ::highlight(md-find-active) { background: var(--md-find-current-bg, var(--md-link-color)); color: var(--md-find-current-fg, var(--md-bg)); }
+
+/* --------------------------------------------------------------------------
+   App shell + sidebar + outline (v0.2.0)
+   Structural rules only — every visual property references a theme variable.
+   Layout: .app-shell is a flex row (sidebar + main column) inside #app's
+   flex column. The sidebar is in-flow and sticky so it pushes content rather
+   than overlaying it; it collapses via the top-bar toggle (Ctrl+B).
+   -------------------------------------------------------------------------- */
+
+.app-shell {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem 0.75rem calc(28px + 1rem);
+  background: var(--md-bg);
+  border-right: 1px solid var(--md-hr-color);
+}
+
+.main-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar: sidebar toggle + current filename. Sticky so the toggle is always
+   reachable; background must be opaque (var(--md-bg)) to cover scrolled text. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 2.5rem;
+  background: var(--md-bg);
+  border-bottom: 1px solid var(--md-hr-color);
+  font-family: var(--md-font-mono);
+  font-size: 0.78rem;
+  color: var(--md-blockquote-fg);
+}
+
+.topbar-toggle {
+  background: transparent;
+  color: var(--md-blockquote-fg);
+  border: 1px solid var(--md-hr-color);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.topbar-toggle:hover {
+  color: var(--md-link-color);
+  border-color: var(--md-link-color);
+}
+
+.topbar-toggle svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.topbar-file {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sidebar sections */
+
+.sidebar-section-title {
+  font-family: var(--md-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-blockquote-fg);
+  padding: 0 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.sidebar-open-btn {
+  width: 100%;
+  background: var(--md-statusbar-bg);
+  color: var(--md-link-color);
+  border: 1px solid var(--md-hr-color);
+  border-radius: 3px;
+  font-family: var(--md-font-mono);
+  font-size: 0.72rem;
+  padding: 0.4em 0.5em;
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.sidebar-open-btn:hover {
+  border-color: var(--md-link-color);
+}
+
+/* Outline list: flat buttons indented by heading level via --toc-level.
+   Rail + circle marker echo the mockup; active entry uses link color. */
+
+.outline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-left: 0.75rem;
+}
+
+.outline::before {
+  content: "";
+  position: absolute;
+  top: 0.6em;
+  bottom: 0.6em;
+  left: calc(0.75rem + 3px);
+  width: 1px;
+  background: var(--md-hr-color);
+}
+
+.outline-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 0 3px 3px 0;
+  color: var(--md-fg);
+  font-family: var(--md-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  padding: 0.25em 0.5em 0.25em calc(1rem + (var(--toc-level, 1) - 1) * 0.9rem);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outline-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  border: 1px solid var(--md-blockquote-fg);
+  background: var(--md-bg);
+}
+
+.outline-item:hover {
+  color: var(--md-link-color);
+}
+
+.outline-item.active {
+  color: var(--md-link-color);
+  background: var(--md-code-bg);
+}
+
+.outline-item.active::before {
+  border-color: var(--md-link-color);
+  background: var(--md-link-color);
+}
+
+.outline-empty {
+  font-family: var(--md-font-mono);
+  font-size: 0.75rem;
+  color: var(--md-blockquote-fg);
+  padding: 0 0.75rem;
+  opacity: 0.7;
+}
+
+/* Anchor offset: keeps the sticky top bar + find bar from covering a heading
+   reached via outline click or #anchor navigation. */
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4,
+.md-body h5,
+.md-body h6 {
+  scroll-margin-top: 80px;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+  .topbar {
+    padding: 0.5rem 1.25rem;
+  }
+}

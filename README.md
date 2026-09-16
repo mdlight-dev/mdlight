@@ -29,6 +29,7 @@ mdlight                         # opens file picker
 - **7 built-in themes**: default-dark, nord, gruvbox, tokyo-night, amber-night, paper, murakami — swappable at runtime via `--theme` or the status-bar picker
 - **File watching**: auto-reloads when the file changes on disk
 - **Zoom**: Ctrl+= / Ctrl+- / Ctrl+0, status bar indicator
+- **Outline sidebar**: document headings with click-to-jump and scroll-spy, toggle with Ctrl+B
 - **Image handling**: local images embedded as data URIs; remote images shown as click-to-load placeholders
 - **Safe rendering**: raw HTML in Markdown is escaped for security — use Markdown syntax for images and formatting
 - **Atomic saves**: write to temp file, rename over original — no half-written files

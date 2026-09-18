@@ -1,5 +1,7 @@
 # MDLight
 
+![MDLight banner](build/banner.png)
+
 ![MDLight](build/output.gif)
 
 <p align="center">
@@ -10,7 +12,7 @@
   <img src="https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=flat">
 </p>
 
-A beautiful, lightweight Markdown reader — no vaults, no plugins, no accounts. Just open a file and read.
+Open a file. Read beautifully. Edit if needed. Close it.
 
 ## Quick start
 

@@ -1,18 +1,18 @@
 # MDLight
 
-![MDLight banner](build/banner.png)
-
-![MDLight](build/output.gif)
-
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=4a90d9&style=flat">
-  <img src="https://img.shields.io/badge/license-MIT-4a90d9?style=flat">
-  <img src="https://img.shields.io/github/actions/workflow/status/mdlight-dev/mdlight/release.yml?label=build&color=4a90d9&style=flat">
-  <img src="https://img.shields.io/badge/platform-linux%20%7C%20windows-4a90d9?style=flat">
-  <img src="https://img.shields.io/badge/language-Go%20%2B%20Svelte-4a90d9?style=flat">
+  <img src="https://img.shields.io/github/v/release/mdlight-dev/mdlight?label=version&color=7aa2d4&style=flat">
+  <img src="https://img.shields.io/badge/license-MIT-7aa2d4?style=flat">
+  <img src="https://img.shields.io/github/actions/workflow/status/mdlight-dev/mdlight/release.yml?label=build&color=7aa2d4&style=flat">
+  <img src="https://img.shields.io/badge/platform-linux%20%7C%20windows-7aa2d4?style=flat">
+  <img src="https://img.shields.io/badge/language-Go%20%2B%20Svelte-7aa2d4?style=flat">
 </p>
 
+![MDLight banner](build/banner.png)
+
 Open a file. Read beautifully. Edit if needed. Close it.
+
+![MDLight](build/output.gif)
 
 ## Quick start
 

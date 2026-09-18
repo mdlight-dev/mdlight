@@ -34,6 +34,37 @@ get_latest_version() {
     echo "$version"
 }
 
+# Try to append a PATH entry to a single shell RC file.
+# Prints a confirmation and returns 0 on success (including the
+# idempotent case where the entry is already present).
+# Returns 1 when the file is missing-and-not-creatable or not writable,
+# so the caller can fall through to the next candidate instead of failing.
+try_add_path_rc() {
+    _rc="$1"
+    case "$_rc" in
+        *.fish)
+            _line="set -U fish_user_paths ${BIN_DIR} \$fish_user_paths"
+            ;;
+        *)
+            _line="export PATH=\"${BIN_DIR}:\$PATH\""
+            ;;
+    esac
+    if [ -f "$_rc" ] && grep -qsF -- "${BIN_DIR}" "$_rc"; then
+        echo "PATH entry already present in ${_rc}"
+        return 0
+    fi
+    _dir=$(dirname "$_rc")
+    if [ ! -d "$_dir" ]; then
+        mkdir -p "$_dir" 2>/dev/null || return 1
+    fi
+    if printf '%s\n' "$_line" >> "$_rc" 2>/dev/null; then
+        echo "Added ${BIN_DIR} to PATH in ${_rc}"
+        echo "Restart your shell or run: export PATH=\"${BIN_DIR}:\$PATH\""
+        return 0
+    fi
+    return 1
+}
+
 main() {
     plat=$(detect_arch)
     os=$(echo "$plat" | cut -d_ -f1)
@@ -147,25 +178,52 @@ EOF
         update-desktop-database "$APP_DIR" 2>/dev/null || true
     fi
 
-    # PATH check
+    # PATH check — convenience only, never fails the install.
+    # The binary, desktop entry, and icon above are the install; a shell RC
+    # that cannot be updated (e.g. root-owned ~/.bashrc) degrades to a
+    # warning with a manual command, and exit status stays 0.
     case ":$PATH:" in
         *:"${BIN_DIR}":*)
             ;;
         *)
-            shell_rc="${HOME}/.bashrc"
-            [ -n "${ZSH_VERSION:-}" ] && shell_rc="${HOME}/.zshrc"
-            [ -f "${HOME}/.config/fish/config.fish" ] && shell_rc="${HOME}/.config/fish/config.fish"
-
-            case "$shell_rc" in
-                *.fish)
-                    echo "set -U fish_user_paths ${BIN_DIR} \$fish_user_paths" >> "$shell_rc"
+            path_added=0
+            case "${SHELL:-}" in
+                *fish*)
+                    if try_add_path_rc "${HOME}/.config/fish/config.fish"; then
+                        path_added=1
+                    fi
+                    ;;
+                *zsh*)
+                    if try_add_path_rc "${HOME}/.zshrc"; then
+                        path_added=1
+                    elif try_add_path_rc "${HOME}/.zprofile"; then
+                        path_added=1
+                    elif try_add_path_rc "${HOME}/.profile"; then
+                        path_added=1
+                    fi
+                    ;;
+                *bash*|"")
+                    if try_add_path_rc "${HOME}/.bashrc"; then
+                        path_added=1
+                    elif try_add_path_rc "${HOME}/.bash_profile"; then
+                        path_added=1
+                    elif try_add_path_rc "${HOME}/.profile"; then
+                        path_added=1
+                    fi
                     ;;
                 *)
-                    echo "export PATH=\"${BIN_DIR}:\$PATH\"" >> "$shell_rc"
+                    if try_add_path_rc "${HOME}/.profile"; then
+                        path_added=1
+                    elif try_add_path_rc "${HOME}/.bashrc"; then
+                        path_added=1
+                    fi
                     ;;
             esac
-            echo "Added ${BIN_DIR} to PATH in ${shell_rc}"
-            echo "Restart your shell or run: export PATH=\"${BIN_DIR}:\$PATH\""
+            if [ "$path_added" != "1" ]; then
+                echo "Warning: could not update shell config (no writable RC file found)." >&2
+                echo "Binary is installed in ${BIN_DIR}; add it to PATH manually:" >&2
+                echo "  export PATH=\"${BIN_DIR}:\$PATH\"" >&2
+            fi
             ;;
     esac
 
